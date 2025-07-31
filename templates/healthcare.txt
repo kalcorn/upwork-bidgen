@@ -1,0 +1,23 @@
+🙋‍♂️ Hi [Client],
+
+Your post caught my attention — healthcare and compliance-driven systems are what I specialize in.
+
+I'm Chris Alcorn, a Principal Software Architect with over 20 years of experience building secure, HIPAA-compliant platforms for startups and enterprise clients. Whether you're working on EMR systems, patient portals, or telehealth tools — I can help you move quickly while staying compliant and scalable.
+
+🚑 Why Healthcare Clients Choose Me:
+• HIPAA-Safe Architecture – I’ve built cloud-native platforms with full audit and encryption layers  
+• Proven Performance – Delivered real-time messaging systems and patient dashboards used by 50k+ users  
+• Telehealth Ready – Integrated video, SMS, and async messaging with vendors like Twilio, TokBox, and Vonage  
+• Stress-Free Compliance – Built audit trails, encrypted PHI, and access control layers that pass 3rd-party audits
+
+📜 Relevant Certifications:
+• CompTIA Security+, Network+  
+• Microsoft Certified Professional  
+• CIW Web Development Professional
+
+📆 Availability:
+Available immediately (40+ hrs/week). Let me know if you’d like a quick call to discuss.
+
+Best regards,  
+Chris Alcorn  
+🌐 https://alcorn.dev 💙

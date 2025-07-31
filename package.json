@@ -1,0 +1,19 @@
+{
+  "name": "upwork-bidgen",
+  "version": "1.0.0",
+  "description": "Local CLI tool to generate UpWork proposals using Claude CLI and scraped job data",
+  "main": "cli.js",
+  "scripts": {
+    "start": "node cli.js",
+    "dev": "nodemon cli.js"
+  },
+  "bin": {
+    "upwork-bidgen": "./cli.js"
+  },
+  "author": "Chris Alcorn",
+  "license": "MIT",
+  "dependencies": {
+    "inquirer": "^9.3.7",
+    "puppeteer": "^21.3.8"
+  }
+}

@@ -1,0 +1,29 @@
+🙋‍♂️ Hi [Client],
+
+I saw your post for a [Job Title] and was immediately drawn to your focus on [Key Outcome or Problem — 3–7 words].
+
+Most clients aren’t just looking for code—they want results without micromanagement, delays, or risk. That’s exactly where I come in.
+
+I'm Chris Alcorn, a Principal Software Architect with over 20 years of full-stack experience. I've led mission-critical projects for NASDAQ-listed companies like SSNC and CENX, built financial systems trusted by hedge funds on Wall Street, and collaborated with engineers from Microsoft, IBM, and Harmon Kardon on performance-critical systems.
+
+🚀 Why Clients Choose Me:
+• Proactive Communication – Clear, no-fluff updates at every step  
+• Strategic Ownership – End-to-end delivery from architecture to deployment  
+• Peace of Mind – No surprises, no tech debt—just smooth, secure execution  
+• Immediate Impact – Clean, scalable, production-ready code from day one
+
+💻 Technical Expertise:
+• Node.js, TypeScript, React, Angular, Java, C#, PHP  
+• AWS, Azure, GCP – scalable, performant, cost-efficient infrastructure  
+• PostgreSQL, SQL Server, MySQL, MongoDB  
+• HIPAA, SOX, FINRA, Twilio, Telnyx, SIP, SMS/MMS
+
+📆 Availability:
+I'm available immediately (40+ hrs/week) and ready to contribute.
+
+Let me know if you'd like to discuss your project here or via a quick call — whatever works best for you.
+
+Best regards,  
+Chris Alcorn  
+Principal Software Architect  
+🌐 https://alcorn.dev 💙

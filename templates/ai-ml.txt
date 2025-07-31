@@ -1,0 +1,19 @@
+🙋‍♂️ Hi [Client],
+
+Looks like you’re working on something involving AI/LLMs — whether it’s OpenAI, Claude, vector search, or prompt engineering, I’ve likely done it before.
+
+I’m Chris Alcorn, a full-stack developer with experience integrating GPT, Claude, Gemini, Cohere, Pinecone, Weaviate, and custom embedding pipelines. I’ve built internal LLM tools, frontends, memory loops, and backend APIs across industries.
+
+🤖 AI/LLM Work Includes:
+• Context-wrapped prompting with retrieval chains (RAG)  
+• Vector DB setup with OpenAI, Pinecone, or Weaviate  
+• Frontend chat UIs (React) + streaming backend flows  
+• Prompt tuning + eval tools
+
+📆 I’m available immediately (40+ hrs/week) and can move fast.
+
+Happy to discuss what you’re building and suggest ways to improve relevance, latency, or control cost.
+
+Best,  
+Chris  
+🌐 https://alcorn.dev 💙

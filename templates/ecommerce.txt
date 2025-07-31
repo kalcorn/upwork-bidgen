@@ -1,0 +1,19 @@
+🙋‍♂️ Hi [Client],
+
+You’re looking for help on an eCommerce or transactional product — I’ve helped companies build systems handling everything from digital goods to complex physical inventory.
+
+I’m Chris Alcorn, a full-stack architect with experience integrating Stripe, Shopify, Snipcart, headless CMSs, custom carts, promo logic, and more. I build checkout flows that are fast, secure, and convert.
+
+🛒 I’ve worked on:
+• Stripe integrations for subscription + one-time sales  
+• Shopify storefronts with custom theme layers + headless React frontends  
+• Cart logic: discounts, shipping, taxes, edge cases  
+• Inventory systems and backend dashboards
+
+📆 I’m available immediately (40+ hrs/week).
+
+If you’d like to chat, I’d be happy to suggest ways to reduce friction or increase conversions fast.
+
+Best,  
+Chris  
+🌐 https://alcorn.dev 💙

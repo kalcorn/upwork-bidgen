@@ -1,0 +1,19 @@
+🙋‍♂️ Hi [Client],
+
+Looks like you're building a SaaS product — I've worked with dozens of B2B and B2C teams to launch admin portals, customer dashboards, and subscription logic at scale.
+
+I'm Chris Alcorn, a full-stack software architect with 20+ years of experience delivering scalable SaaS systems in fintech, healthcare, productivity, and telecom. I specialize in React, Node, serverless, and secure multi-tenant cloud systems.
+
+🚀 SaaS Expertise:
+• Admin interfaces, metrics, CRUD, reporting  
+• Role-based access control and user management  
+• Stripe subscriptions, plans, promo logic  
+• API design and secure backend infra
+
+📆 I'm available immediately (40+ hrs/week).
+
+If you're looking for someone who can jump in with little ramp-up and deliver smooth, scalable code — let's talk.
+
+Best regards,  
+Chris  
+🌐 https://alcorn.dev 💙

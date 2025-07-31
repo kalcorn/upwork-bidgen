@@ -1,0 +1,27 @@
+🙋‍♂️ Hi [Client],
+
+I saw your post for a [Job Title] and it sounds like you're wrestling with some legacy tech that’s slowing down your momentum.
+
+That’s exactly where I can help.
+
+I’m Chris Alcorn, a Principal Software Architect with 20+ years of experience modernizing systems without breaking what works. I’ve rescued legacy PHP, Java, .NET, and monolithic platforms, transforming them into scalable, secure, maintainable solutions — fast.
+
+🚀 Why Clients Choose Me:
+• Seamless Upgrades – I modernize incrementally to avoid costly rewrites  
+• Scalable Refactors – Break down bottlenecks without disrupting business  
+• Architecture Expertise – Plan long-term foundations, not band-aids  
+• Stress-Free Execution – You get clean, production-ready code without the overhead
+
+💻 Past Legacy Upgrades:
+• Migrated 300k-line healthcare .NET system to Node.js microservices  
+• Refactored monolithic fintech app into GraphQL & React  
+• Containerized telecom systems with zero downtime using Docker & CI/CD
+
+📆 Availability:
+I can start immediately (40+ hrs/week).
+
+Let me know if you'd like me to map out exactly how I’d approach this for your project.
+
+Best regards,  
+Chris Alcorn  
+🌐 https://alcorn.dev 💙

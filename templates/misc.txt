@@ -1,0 +1,19 @@
+🙋‍♂️ Hi [Client],
+
+I saw your post for a [Job Title] and wanted to reach out. I work full-time as a contract software architect and frequently jump into freelance/contract dev roles like this one to help teams hit deadlines or improve outcomes.
+
+I’ve worked with startups, SaaS companies, and enterprise firms alike — helping fix bugs, improve performance, build features, or modernize systems.
+
+🧠 I can help with:
+• React / Node / API / cloud systems  
+• Refactoring legacy code or scaling MVPs  
+• Debugging bugs, fixing regressions, improving architecture  
+• Setting up CI/CD, dev workflows, or best practices
+
+📆 I’m available immediately (40+ hrs/week) and happy to help however you need.
+
+Let me know if you’d like to move forward or have questions.
+
+Best,  
+Chris  
+🌐 https://alcorn.dev 💙
