@@ -1,0 +1,19 @@
+🙋‍♂️ Hi [Client],
+
+I saw your post for a [Job Title] involving Twilio/SIP/SMS — and wanted to let you know this is exactly the space I specialize in.
+
+I’ve designed and deployed telephony systems handling millions of calls/messages using Twilio, Telnyx, SignalWire, and Asterisk. Whether it’s voice routing, SIP trunking, multi-channel SMS, or fax fallback — I’ve built it before and can do it again with minimal ramp-up.
+
+✅ What I Deliver:
+• VoIP systems that scale and just work  
+• Carrier fallback, SMS delivery tuning, error trapping  
+• Voice routing, TwiML, call queues, IVR, compliance  
+• Scalable cloud integrations with low latency
+
+📆 I’m available now (40+ hrs/week) and can deliver results quickly.
+
+Happy to review your architecture or jump in immediately.
+
+Best,  
+Chris  
+🌐 https://alcorn.dev 💙
