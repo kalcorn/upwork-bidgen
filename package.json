@@ -1,19 +1,61 @@
 {
   "name": "upwork-bidgen",
   "version": "1.0.0",
-  "description": "Local CLI tool to generate UpWork proposals using Claude CLI and scraped job data",
+  "description": "Comprehensive local CLI tool to generate high-converting UpWork proposals using AI-powered template selection, job scraping, and Claude CLI integration - zero API costs",
   "main": "cli.js",
   "scripts": {
     "start": "node cli.js",
-    "dev": "nodemon cli.js"
+    "dev": "nodemon cli.js",
+    "test": "echo \"No tests yet - this is a CLI tool\" && exit 0"
   },
   "bin": {
     "upwork-bidgen": "./cli.js"
   },
-  "author": "Chris Alcorn",
+  "keywords": [
+    "upwork",
+    "freelance",
+    "proposals",
+    "ai",
+    "claude",
+    "scraping",
+    "automation",
+    "cli",
+    "bidding",
+    "templates"
+  ],
+  "author": {
+    "name": "Chris Alcorn",
+    "url": "https://alcorn.dev"
+  },
   "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/upwork-bidgen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/upwork-bidgen/issues"
+  },
+  "homepage": "https://github.com/your-username/upwork-bidgen#readme",
   "dependencies": {
     "inquirer": "^9.3.7",
     "puppeteer": "^21.3.8"
-  }
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "files": [
+    "cli.js",
+    "scraper.js",
+    "generatePrompt.js",
+    "claudeRunner.js",
+    "templateClassifier.js",
+    "config.js",
+    "templates/",
+    "README.md",
+    "CLAUDE.md",
+    "package.json"
+  ]
 }

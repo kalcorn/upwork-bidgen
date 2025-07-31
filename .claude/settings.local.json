@@ -5,7 +5,11 @@
       "Bash(mkdir:*)",
       "Bash(npm install:*)",
       "Bash(npm start:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebFetch(domain:www.upwork.com)",
+      "Bash(grep:*)",
+      "Bash(rm:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

@@ -1,16 +1,16 @@
 🙋‍♂️ Hi [Client],
 
-I saw your post for a [Job Title] and was immediately drawn to your focus on [Key Outcome or Problem — 3–7 words].
+Your [Job Title] project caught my attention—financial systems require more than just coding expertise. They demand deep understanding of regulatory compliance, risk management, and the zero-tolerance environment where bugs can cost millions.
 
-Most clients aren’t just looking for code—they want results without micromanagement, delays, or risk. That’s exactly where I come in.
+That's exactly the specialized knowledge I bring to every fintech engagement.
 
 I'm Chris Alcorn, a Principal Software Architect with over 20 years of full-stack experience. I've led mission-critical projects for NASDAQ-listed companies like SSNC and CENX, built financial systems trusted by hedge funds on Wall Street, and collaborated with engineers from Microsoft, IBM, and Harmon Kardon on performance-critical systems.
 
-🚀 Why Clients Choose Me:
-• Proactive Communication – Clear, no-fluff updates at every step  
-• Strategic Ownership – End-to-end delivery from architecture to deployment  
-• Peace of Mind – No surprises, no tech debt—just smooth, secure execution  
-• Immediate Impact – Clean, scalable, production-ready code from day one
+🚀 Why Fintech Clients Choose Me:
+• Regulatory Expertise – SOX, FINRA, and PCI compliance built into every solution
+• Risk-Aware Architecture – Fault-tolerant systems designed for financial data integrity
+• Audit-Ready Documentation – Complete trails for regulatory reviews and compliance audits
+• Performance Under Pressure – High-frequency trading and real-time processing experience
 
 💻 Technical Expertise:
 • Node.js, TypeScript, React, Angular, Java, C#, PHP  
@@ -26,4 +26,4 @@ Let me know if you'd like to discuss your project here or via a quick call — w
 Best regards,  
 Chris Alcorn  
 Principal Software Architect  
-🌐 https://alcorn.dev 💙
+🌐 https://alcorn.dev
