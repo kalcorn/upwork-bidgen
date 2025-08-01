@@ -12,10 +12,10 @@ I'm Chris Alcorn, a Principal Software Architect with 20+ years of experience mo
 • Technical Debt Resolution – Address root causes, not just symptoms of legacy problems
 • Stakeholder Communication – Clear progress tracking and risk assessment throughout the process
 
-💻 **Legacy Modernization Results:**
-• **Healthcare System**: Migrated 300k-line .NET monolith to Node.js microservices—reduced deployment time from 4 hours to 15 minutes
-• **Fintech Platform**: Refactored legacy app to GraphQL & React—improved page load times by 75% and reduced technical debt by 60%
-• **Telecom Infrastructure**: Containerized legacy systems with zero downtime—achieved 99.9% uptime and 40% cost reduction
+💻 Legacy Modernization Results:
+• Healthcare System: Migrated 300k-line .NET monolith to Node.js microservices—reduced deployment time from 4 hours to 15 minutes
+• Fintech Platform: Refactored legacy app to GraphQL & React—improved page load times by 75% and reduced technical debt by 60%
+• Telecom Infrastructure: Containerized legacy systems with zero downtime—achieved 99.9% uptime and 40% cost reduction
 
 📆 Availability:
 I can start immediately (40+ hrs/week).
@@ -24,4 +24,5 @@ I'd be happy to provide a free legacy system assessment and modernization roadma
 
 Best regards,  
 Chris Alcorn  
+Principal Software Architect  
 🌐 https://alcorn.dev

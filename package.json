@@ -1,7 +1,7 @@
 {
   "name": "upwork-bidgen",
   "version": "1.0.0",
-  "description": "Comprehensive local CLI tool to generate high-converting UpWork proposals using AI-powered template selection, job scraping, and Claude CLI integration - zero API costs",
+  "description": "Comprehensive local CLI tool to generate high-converting UpWork proposals using AI-powered template selection, manual data entry, and Claude CLI integration - zero API costs",
   "main": "cli.js",
   "scripts": {
     "start": "node cli.js",
@@ -17,7 +17,7 @@
     "proposals",
     "ai",
     "claude",
-    "scraping",
+    "manual-entry",
     "automation",
     "cli",
     "bidding",
@@ -40,19 +40,17 @@
   },
   "homepage": "https://github.com/your-username/upwork-bidgen#readme",
   "dependencies": {
-    "inquirer": "^9.3.7",
-    "puppeteer": "^21.3.8"
+    "axios": "^1.11.0",
+    "inquirer": "^9.3.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
   "files": [
     "cli.js",
-    "scraper.js",
-    "generatePrompt.js",
-    "claudeRunner.js",
-    "templateClassifier.js",
     "config.js",
+    "data.js",
+    "lib/",
     "templates/",
     "README.md",
     "CLAUDE.md",

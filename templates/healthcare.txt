@@ -25,4 +25,5 @@ I'd be happy to provide a preliminary security and compliance review of your pro
 
 Best regards,  
 Chris Alcorn  
+Principal Software Architect  
 🌐 https://alcorn.dev

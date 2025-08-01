@@ -6,29 +6,29 @@ I specialize in building infrastructure that's secure, scalable, and cost-optimi
 
 I'm Chris Alcorn, a Principal Software Architect with deep expertise in cloud infrastructure, automation, and security. I've designed systems that handle millions of users while maintaining 99.9% uptime and staying within budget constraints.
 
-☁️ **Infrastructure Expertise:**
-• **Cloud Architecture** – AWS, Azure, GCP with cost optimization and security best practices
-• **Container Orchestration** – Docker, Kubernetes, microservices deployment and scaling
-• **Infrastructure as Code** – Terraform, CloudFormation for repeatable, version-controlled deployments
-• **CI/CD Pipelines** – Automated testing, deployment, and rollback strategies
+☁️ Infrastructure Expertise:
+• Cloud Architecture – AWS, Azure, GCP with cost optimization and security best practices
+• Container Orchestration – Docker, Kubernetes, microservices deployment and scaling
+• Infrastructure as Code – Terraform, CloudFormation for repeatable, version-controlled deployments
+• CI/CD Pipelines – Automated testing, deployment, and rollback strategies
 
-🛡️ **Security & Reliability Focus:**
-• **Zero-Trust Security** – Network segmentation, encryption, identity management, compliance frameworks
-• **Disaster Recovery** – Backup strategies, failover systems, business continuity planning
-• **Monitoring & Alerting** – Proactive issue detection with Datadog, New Relic, CloudWatch
-• **Performance Optimization** – Load balancing, caching, database tuning for maximum efficiency
+🛡️ Security & Reliability Focus:
+• Zero-Trust Security – Network segmentation, encryption, identity management, compliance frameworks (SOX, FINRA, HIPAA)
+• Disaster Recovery – Backup strategies, failover systems, business continuity planning
+• Monitoring & Alerting – Proactive issue detection with Datadog, New Relic, CloudWatch
+• Performance Optimization – Load balancing, caching, database tuning for maximum efficiency
 
-💰 **Cost Management:**
-• **Resource Optimization** – Right-sizing instances, automated scaling, reserved capacity planning
-• **Multi-Cloud Strategy** – Avoiding vendor lock-in while leveraging best-of-breed services
-• **Budget Monitoring** – Cost tracking, alerting, and optimization recommendations
+💰 Cost Management:
+• Resource Optimization – Right-sizing instances, automated scaling, reserved capacity planning
+• Multi-Cloud Strategy – Avoiding vendor lock-in while leveraging best-of-breed services
+• Budget Monitoring – Cost tracking, alerting, and optimization recommendations
 
-📊 **DevOps Success Metrics:**
+📊 DevOps Success Metrics:
 • Reduced deployment time from hours to minutes with automated CI/CD
 • Achieved 99.9% uptime for mission-critical financial systems
 • Cut cloud costs by 40% through intelligent resource optimization
 
-📆 **Availability:**
+📆 Availability:
 I'm available immediately (40+ hrs/week) and can start with an infrastructure audit within 24 hours.
 
 Whether you're migrating to the cloud, scaling existing systems, or building from scratch, I'd be happy to discuss your specific requirements and provide recommendations for reliable, secure, cost-effective infrastructure.

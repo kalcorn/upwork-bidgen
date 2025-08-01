@@ -16,6 +16,7 @@ I’m Chris Alcorn, a full-stack developer with experience integrating GPT, Clau
 
 Happy to discuss what you’re building and suggest ways to improve relevance, latency, or control cost.
 
-Best,  
-Chris  
+Best regards,  
+Chris Alcorn  
+Principal Software Architect  
 🌐 https://alcorn.dev

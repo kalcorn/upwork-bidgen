@@ -7,18 +7,18 @@ After 20+ years as a Principal Software Architect, I've learned that every proje
 I'm Chris Alcorn, and I've successfully delivered solutions across fintech, healthcare, SaaS, eCommerce, and enterprise environments. Whether you need rapid problem-solving, architectural guidance, or hands-on development, I bring the experience to get it done right.
 
 🚀 What Sets Me Apart:
-• **Rapid Adaptation** – I quickly understand your domain, tech stack, and business requirements
-• **Senior-Level Problem Solving** – 20+ years of debugging complex systems and architecting solutions
-• **Full-Stack Versatility** – From React frontends to cloud infrastructure, databases to APIs
-• **Business-Focused Delivery** – Code that solves real problems and drives measurable outcomes
+• Rapid Adaptation – I quickly understand your domain, tech stack, and business requirements
+• Senior-Level Problem Solving – 20+ years of debugging complex systems and architecting solutions
+• Full-Stack Versatility – From React frontends to cloud infrastructure, databases to APIs
+• Business-Focused Delivery – Code that solves real problems and drives measurable outcomes
 
-💻 **Core Technical Expertise:**
-• **Frontend**: React, Angular, TypeScript, responsive design
-• **Backend**: Node.js, Python, Java, C#, RESTful APIs, GraphQL
-• **Cloud & DevOps**: AWS, Azure, Docker, CI/CD, infrastructure as code
-• **Databases**: PostgreSQL, MongoDB, Redis, performance optimization
+💻 Core Technical Expertise:
+• Frontend: React, Angular, TypeScript, responsive design
+• Backend: Node.js, Python, Java, C#, RESTful APIs, GraphQL
+• Cloud & DevOps: AWS, Azure, Docker, CI/CD, infrastructure as code
+• Databases: PostgreSQL, MongoDB, Redis, performance optimization
 
-📆 **Availability:**
+📆 Availability:
 I'm available immediately (40+ hrs/week) and can start contributing within 24 hours.
 
 I'd be happy to discuss your specific requirements and provide a quick assessment of how I'd approach your project. No obligation—just a professional conversation about getting you the results you need.
