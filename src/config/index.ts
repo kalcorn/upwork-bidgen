@@ -27,7 +27,22 @@ const config: AppConfig = {
           after: "0",
           first: 50
         },
-        categoryIds_any: null
+        categoryIds_any: [
+          "531770282580668420", // Data Science & Analytics
+          "531770282580668419", // IT & Networking
+          "1737190722360750082", // AI Apps & Integration
+          "531770282589057025", // Desktop Application Development
+          "531770282589057026", // Ecommerce Development
+          "531770282589057027", // Game Design & Development
+          "531770282589057024", // Mobile Development
+          "531770282589057032", // Other - Software Development
+          "531770282589057028", // Scripts & Utilities
+          "531770282584862733"  // Web Development
+        ],
+        proposalRange_eq: {
+          from: 0,
+          to: 20
+        }
       }
     }
   },

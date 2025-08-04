@@ -506,32 +506,24 @@ export class UpWorkAPI {
     try {
       const query = `
         query GetCategories {
-          marketplaceJobCategories {
-            edges {
-              node {
-                id
-                name
-                subcategories {
-                  edges {
-                    node {
-                      id
-                      name
-                    }
-                  }
-                }
-              }
+          ontologyCategories {
+            id
+            preferredLabel
+            subcategories {
+              id
+              preferredLabel
             }
           }
         }
       `;
 
       const response = await this.makeGraphQLRequest(query);
-      if (!response || !response.data?.marketplaceJobCategories) {
+      if (!response || !response.data?.ontologyCategories) {
         console.log('No categories returned from API');
         return null;
       }
 
-      return response.data.marketplaceJobCategories;
+      return response.data.ontologyCategories;
     } catch (error) {
       console.error('Failed to get categories:', error instanceof Error ? error.message : 'Unknown error');
       return null;
@@ -541,11 +533,11 @@ export class UpWorkAPI {
   /**
    * Search for jobs using GraphQL with advanced filtering
    */
-  async searchJobsAdvanced(filters: JobSearchParams = {}): Promise<JobSearchResult | null> {
+  async searchJobs(filters: JobSearchParams = {}): Promise<JobSearchResult | null> {
     try {
       // Use the advanced search format you provided
       const query = `
-                                query SearchJobsAdvanced($sortAttributes: [MarketplaceJobPostingSearchSortAttribute!], $searchType: MarketplaceJobPostingSearchType!, $marketPlaceJobFilter: MarketplaceJobPostingsSearchFilter!) {
+                                query SearchJobs($sortAttributes: [MarketplaceJobPostingSearchSortAttribute!], $searchType: MarketplaceJobPostingSearchType!, $marketPlaceJobFilter: MarketplaceJobPostingsSearchFilter!) {
           marketplaceJobPostingsSearch(
             sortAttributes: $sortAttributes
             searchType: $searchType
@@ -615,77 +607,7 @@ export class UpWorkAPI {
     }
   }
 
-  /**
-   * Search for jobs using GraphQL (legacy method)
-   */
-  async searchJobs(filters: JobSearchParams = {}): Promise<JobSearchResult | null> {
-    try {
-      const query = `
-        query SearchJobs($query: String, $limit: Int, $offset: Int) {
-          marketplaceJobPostingsSearch(
-            query: $query
-            first: $limit
-            after: $offset
-          ) {
-            edges {
-              node {
-                id
-                title
-                description
-                budget {
-                  amount
-                  currency
-                  type
-                }
-                client {
-                  id
-                  name
-                  location
-                  rating
-                  totalSpent
-                  totalHired
-                  totalReviews
-                  memberSince
-                }
-                experience
-                postedDate
-                skills
-              }
-            }
-            pageInfo {
-              hasNextPage
-              endCursor
-            }
-            totalCount
-          }
-        }
-      `;
-
-      const variables = {
-        query: filters.query || '',
-        limit: filters.limit || 20,
-        offset: filters.offset || 0
-      };
-
-      const response = await this.makeGraphQLRequest<JobSearchResponse>(query, variables);
-      if (!response || !response.data?.marketplaceJobPostingsSearch) {
-        return null;
-      }
-
-      const searchData = response.data.marketplaceJobPostingsSearch;
-      
-      return {
-        jobs: searchData.edges.map(edge => this.formatJobData(edge.node)),
-        total: searchData.totalCount,
-        hasMore: searchData.pageInfo.hasNextPage,
-        nextOffset: searchData.pageInfo.endCursor || null
-      };
-
-    } catch (error) {
-      console.error('Failed to search jobs:', error instanceof Error ? error.message : 'Unknown error');
-      return null;
-    }
-  }
+  
 
   /**
    * Parse job URL and extract information

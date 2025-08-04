@@ -44,8 +44,26 @@ async function main() {
     return;
   }
 
+  console.log('\n📚 Fetching job categories...');
+  const categories = await upworkApi.getCategories();
+
+  if (categories) {
+    console.log('\n--- Available Job Categories ---');
+    categories.forEach((category: any) => {
+      console.log(`- ${category.preferredLabel} (ID: ${category.id})`);
+      if (category.subcategories && category.subcategories.length > 0) {
+        category.subcategories.forEach((subCategory: any) => {
+          console.log(`  - ${subCategory.preferredLabel} (ID: ${subCategory.id})`);
+        });
+      }
+    });
+    console.log('------------------------------');
+  } else {
+    console.log('⚠️ Could not fetch job categories.');
+  }
+
   console.log('\n🔍 Searching for relevant jobs on UpWork...');
-  const searchResults = await upworkApi.searchJobsAdvanced(config.upwork.searchFilters);
+  const searchResults = await upworkApi.searchJobs(config.upwork.searchFilters);
 
   if (!searchResults || searchResults.jobs.length === 0) {
     console.log('\n❌ No jobs found matching your criteria. Try adjusting the filters in `src/config/index.ts`.');
