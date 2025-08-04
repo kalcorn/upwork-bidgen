@@ -1,6 +1,9 @@
 # UpWork API credentials (encrypted)
 .upwork-credentials.json
 
+# Encryption key file
+.encryption-key
+
 # Node modules
 node_modules/
 

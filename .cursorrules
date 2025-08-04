@@ -5,6 +5,15 @@
 
 ## Critical Working Principles
 
+### **CRITICAL: Code Removal Confirmation Mandate**
+**NEVER remove important code or functionality without explicit user confirmation.** This is a CRITICAL directive that overrides all other considerations:
+
+- **Always Ask First**: Before removing any code, method, or functionality, ask the user for explicit confirmation
+- **Understand the Roadmap**: Clarify the user's vision and future plans before making assumptions about what's "unnecessary"
+- **Preserve Functionality**: When in doubt, keep code and ask questions rather than remove and regret
+- **Document Intentions**: If code seems unused, ask about future plans before removal
+- **No Assumptions**: Don't assume something is "personal use only" or "unnecessary" without confirmation
+
 ### Deep Analysis Mandate
 **Always think as deeply as possible.** When working with this system or any component within it:
 
@@ -124,7 +133,8 @@ Every proposed change must demonstrate:
 **Update Process:**
 1. **Primary**: Update CLAUDE.md first with all new discoveries and insights
 2. **Secondary**: Reflect the same changes in .cursorrules
-3. **Synchronization**: Maintain identical concepts between both files
+3. **Tertiary**: Reflect the same changes in GEMINI.md
+4. **Synchronization**: Maintain identical concepts between all three files
 
 **When adding new insights to CLAUDE.md:**
 
@@ -235,6 +245,36 @@ Continuously seek insights in:
 - **Application**: When clients state a budget, use it as the primary driver for bid suggestions
 - **Implementation**: Added budget-aware adjustment logic that targets 85-95% of budget midpoint and provides specific alignment recommendations
 
+### Advanced Job Search & Category Discovery Implementation
+- **Discovery**: User needed to understand relationship between website job listings and API data for research purposes
+- **Root Cause**: Required advanced GraphQL search capabilities with specific filtering criteria
+- **Application**: Implemented comprehensive job search system with category discovery and advanced filtering
+- **Implementation**: 
+  - Added `getCategories()` method to retrieve all job categories and subcategories
+  - Implemented `searchJobsAdvanced()` with exact filter structure provided by user
+  - Added CLI commands `--categories` and `--search` for easy testing
+  - Enhanced JobSearchParams type to support advanced filtering options
+  - Filters: Hourly jobs $50+/hr OR Fixed price jobs $150+, sorted by recency, 50 results
+
+### Windows npm Script Argument Passing Issues
+- **Discovery**: npm script argument passing doesn't work properly on Windows with `npm run dev -- --setup`
+- **Root Cause**: Windows-specific npm behavior where arguments after `--` aren't passed to underlying ts-node command
+- **Application**: Direct ts-node commands work perfectly, npm scripts have limitations
+- **Implementation**: 
+  - Updated documentation to recommend direct ts-node commands for Windows
+  - Added meaningful args filtering to handle npm's `-` argument
+  - Maintained backward compatibility while documenting Windows-specific usage
+
+### Test Credentials Anti-Pattern Removal
+- **Discovery**: System had unnecessary "test credentials" logic that served no purpose and added complexity
+- **Root Cause**: Over-engineering for personal use with fake data that would never work
+- **Application**: Simplified credential setup to only ask for real credentials
+- **Implementation**: 
+  - Removed fake test credential generation
+  - Added proper inquirer prompts for real API key and secret
+  - Implemented validation to ensure credentials are provided
+  - Clean, straightforward credential collection process
+
 ## Claude CLI Integration Best Practices
 
 ### Primary Role: Proposal Enhancement
@@ -329,15 +369,35 @@ Consider developing:
 When new insights are discovered or learning occurs:
 
 1. **Primary Update**: Add all new content to `CLAUDE.md` first
-2. **Secondary Update**: Reflect the same changes in `.cursorrules`
-3. **Verification**: Ensure both files contain identical concepts and insights
-4. **Documentation**: Note the date and nature of updates in both files
+2. **Secondary Update**: Reflect the same changes in .cursorrules
+3. **Tertiary Update**: Reflect the same changes in `GEMINI.md`
+4. **Verification**: Ensure all three files contain identical concepts and insights
+5. **Documentation**: Note the date and nature of updates in all files
 
 ### Maintenance Responsibility
 - **CLAUDE.md**: Comprehensive documentation with full context and detailed explanations
 - **.cursorrules**: Condensed, actionable rules for Cursor's AI behavior
-- **Synchronization**: Both files must be updated whenever new learning occurs
+- **GEMINI.md**: Condensed, actionable rules for Gemini's AI behavior
+- **Synchronization**: All three files must be updated whenever new learning occurs
 
 ---
 
-*This system represents the evolution from a simple template idea to a comprehensive AI-assisted proposal generation engine, designed to maximize UpWork success while maintaining efficiency and avoiding API costs.* 
+*This system represents the evolution from a simple template idea to a comprehensive AI-assisted proposal generation engine, designed to maximize UpWork success while maintaining efficiency and avoiding API costs.*
+
+## 2025-08-04 - Learning Update: Consistent Type Definition Updates and DRY Principle Adherence
+
+### **Discovery**
+Repeated runtime errors (e.g., `npm run dev` failing) occurred after code modifications (e.g., adding new config properties) because corresponding TypeScript type definitions were not updated simultaneously. This also highlighted a violation of the DRY principle when hardcoding values in multiple places instead of centralizing them in configuration.
+
+### **Root Cause Analysis**
+My internal process failed to consistently apply the "style & structure" mandate, specifically regarding TypeScript's type system and the DRY principle. I was modifying implementation code without proactively updating type definitions or centralizing duplicated values.
+
+### **Application**
+- **Proactive Type Definition Updates**: Before any code change that alters a data structure or introduces new properties/parameters, I must first identify and update the relevant type definitions.
+- **Immediate Type Checking**: After *every* code modification, I must proactively run `npm run type-check` (or `tsc --noEmit`) to ensure type safety and catch errors immediately.
+- **DRY Principle Enforcement**: Identify and centralize duplicated values (e.g., `redirect_uri`) into configuration files, and ensure all references point to the single source of truth.
+
+### **Implementation**
+- For new properties/parameters, update relevant interfaces in `src/types` *before* modifying implementation.
+- After any code change, execute `npm run type-check` to verify type correctness.
+- When encountering duplicated values, refactor to use a single configuration entry.

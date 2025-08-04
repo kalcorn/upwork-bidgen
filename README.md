@@ -1,6 +1,6 @@
 # UpWork Bid Generator
 
-A comprehensive local CLI tool that scrapes UpWork job postings and generates high-converting, customized proposals using AI-powered template selection and enhancement.
+A comprehensive local CLI tool that generates high-converting, customized UpWork proposals using AI-powered template selection, manual data entry, and UpWork API integration.
 
 ## Origin Story
 
@@ -8,7 +8,7 @@ This project emerged from a ChatGPT 4.0 conversation focused on solving the chal
 
 ## Key Features
 
-- 🔍 **Intelligent Web Scraping**: Automatically extracts job details, budget ranges, and experience requirements from UpWork URLs
+- 🔍 **UpWork API Integration**: Automatically extracts job details, budget ranges, and experience requirements from UpWork URLs
 - 🧠 **AI-Powered Template Recommendation**: Smart template selection based on job content analysis
 - 📝 **Comprehensive Template Library**: 10 industry-specific, conversion-optimized proposal templates
 - 🤖 **Multi-AI Support**: Primary Claude CLI integration with ChatGPT/Gemini fallbacks
@@ -21,7 +21,7 @@ This project emerged from a ChatGPT 4.0 conversation focused on solving the chal
 ### Prerequisites
 - Node.js 16+ installed
 - Claude CLI installed and accessible via `claude` command
-- Chrome/Chromium browser (for Puppeteer scraping)
+- UpWork API credentials (optional, for API mode)
 
 ### Installation
 ```bash
@@ -43,12 +43,56 @@ The tool will prompt you for a UpWork job URL and guide you through the process.
 npm start -- --url="https://www.upwork.com/jobs/your-job-url"
 ```
 
+#### Setup API Credentials
+```bash
+# For Windows (use direct ts-node command)
+npx ts-node src/cli/index.ts --setup
+
+# For other platforms (npm script may work)
+npm start -- --setup
+```
+This will guide you through setting up UpWork API credentials for automatic job data extraction.
+
+#### Get Job Categories
+```bash
+# For Windows (recommended)
+npx ts-node src/cli/index.ts --categories
+
+# For other platforms (may work)
+npm start -- --categories
+```
+Retrieves all available job categories and subcategories from UpWork API for use in advanced job searches.
+
+#### Advanced Job Search
+```bash
+# For Windows (recommended)
+npx ts-node src/cli/index.ts --search
+
+# For other platforms (may work)
+npm start -- --search
+```
+Searches for jobs using advanced API filters:
+- Hourly jobs: $50+/hr
+- Fixed price jobs: $150+
+- Most recent first
+- Returns first 50 results
+
+#### Default Mode (Job Search)
+```bash
+# For Windows (recommended)
+npx ts-node src/cli/index.ts
+
+# For other platforms (may work)
+npm run dev
+```
+When no arguments are provided, the system defaults to job search mode for easy testing.
+
 ## How It Works
 
 ### 1. Intelligent Job Analysis
-- Scrapes job title, description, budget range, and experience level
-- Uses multiple selector strategies for robust data extraction
-- Handles dynamic JavaScript-rendered UpWork pages
+- Extracts job title, description, budget range, and experience level via API or manual entry
+- Uses UpWork API for reliable data extraction when credentials are available
+- Falls back to manual data entry for maximum compatibility
 
 ### 2. AI-Powered Template Selection
 - Analyzes job content using keyword matching and context analysis
@@ -97,12 +141,41 @@ Our comprehensive template system covers all major UpWork verticals:
 
 ```
 upwork-bidgen/
-├── cli.js                   # Main CLI entry point with interactive prompts
-├── scraper.js              # Robust UpWork job scraping with fallback selectors
-├── generatePrompt.js       # Intelligent template processing and customization
-├── claudeRunner.js         # Claude CLI integration with enhancement prompts
-├── templateClassifier.js   # AI-powered template recommendation engine
-├── config.js              # Configuration placeholder
+├── src/                     # TypeScript source code
+│   ├── cli/                 # CLI application
+│   │   └── index.ts         # Main CLI entry point
+│   ├── core/                # Core business logic
+│   │   ├── UpWorkAPI.ts     # UpWork API integration
+│   │   ├── CredentialsManager.ts # Secure credential management
+│   │   └── ProjectAnalyzer.ts # Project analysis and scoring
+│   ├── services/            # Business services
+│   │   ├── BidCalculator.ts # Intelligent bid calculation
+│   │   ├── TemplateClassifier.ts # AI-powered template selection
+│   │   └── ProposalGenerator.ts # Proposal generation engine
+│   ├── runners/             # AI runners and utilities
+│   │   ├── ClaudeRunner.ts  # Claude CLI integration
+│   │   ├── GeminiRunner.ts  # Gemini CLI integration
+│   │   └── ManualEntry.ts   # Interactive data collection
+│   ├── config/              # Configuration files
+│   │   ├── index.ts         # Main configuration
+│   │   └── data.ts          # Market data and rates
+│   ├── types/               # TypeScript type definitions
+│   │   ├── JobData.ts       # Job data interfaces
+│   │   ├── Config.ts        # Configuration interfaces
+│   │   ├── API.ts           # API-related interfaces
+│   │   ├── Credentials.ts   # Credential management interfaces
+│   │   ├── Templates.ts     # Template-related interfaces
+│   │   ├── BidCalculation.ts # Bid calculation interfaces
+│   │   └── index.ts         # Main type exports
+│   └── utils/               # Utility functions
+├── tests/                   # Comprehensive test suite
+│   ├── unit/                # Unit tests for all services
+│   ├── integration/         # Integration tests for API
+│   └── fixtures/            # Test data and mocks
+
+├── dist/                    # Compiled JavaScript output
+├── templates/               # Proposal templates
+└── output/                  # Generated proposals
 ├── templates/             # Complete template library (10 verticals)
 ├── output/               # Generated proposals and AI responses
 ├── CLAUDE.md            # Comprehensive Claude integration guide
@@ -135,28 +208,47 @@ done
 
 ## Development & Customization
 
-### Development Mode
+### TypeScript Development
 ```bash
-npm run dev  # Auto-reload with nodemon
+npm run dev          # Run TypeScript CLI directly
+npm run build        # Compile TypeScript to JavaScript
+npm run build:watch  # Watch mode for development
+npm run lint         # Type checking
+```
+
+### Testing
+```bash
+npm test             # Run all tests
+npm run test:unit    # Run unit tests only
+npm run test:integration # Run integration tests only
+npm run test:coverage # Generate coverage report
 ```
 
 ### Adding New Templates
 1. Create new `.txt` file in `templates/`
-2. Add keywords to `templateClassifier.js`
+2. Update `src/services/TemplateClassifier.ts` with keywords
 3. Test with relevant job URLs
 
 ### Extending AI Integration
-- Modify `claudeRunner.js` for custom Claude prompts
+- Modify `src/runners/ClaudeRunner.ts` for custom Claude prompts
 - Add new AI services via similar runner modules
 - Integrate with different CLI tools or APIs
+
+### TypeScript Benefits
+- **Type Safety**: Full type checking prevents runtime errors
+- **Better IDE Support**: IntelliSense, autocomplete, and refactoring
+- **Maintainability**: Clear interfaces and contracts between components
+- **Scalability**: Modular architecture for easy extension
 
 ## Troubleshooting
 
 ### Common Issues
-- **Scraping Failures**: UpWork changed selectors - check `scraper.js`
+- **API Failures**: UpWork API issues - check `src/core/UpWorkAPI.ts`
 - **Claude Not Found**: Ensure `claude` command is in PATH
 - **Template Not Found**: Verify template exists in `templates/` directory
 - **Empty Proposals**: Check job URL format and network connectivity
+- **TypeScript Errors**: Run `npm run lint` to check for type issues
+- **Build Failures**: Ensure all dependencies are installed with `npm install`
 
 ### Performance Tips
 - Use `--url` parameter to skip interactive prompts
@@ -175,7 +267,7 @@ Track these KPIs to optimize your proposal success:
 
 This project evolved from real freelancer needs and continues to improve based on user feedback. Areas for contribution:
 - Additional vertical templates
-- Enhanced scraping resilience
+- Enhanced API integration
 - AI integration improvements
 - Performance optimizations
 
