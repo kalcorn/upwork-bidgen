@@ -1,6 +1,9 @@
 # UpWork API credentials (encrypted)
 .upwork-credentials.json
 
+# Applied jobs tracking (local only)
+.applied-jobs.json
+
 # Encryption key file
 .encryption-key
 

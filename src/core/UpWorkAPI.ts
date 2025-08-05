@@ -391,6 +391,18 @@ export class UpWorkAPI {
         if (refreshed) {
           // Retry the request
           return this.makeGraphQLRequest(query, variables);
+        } else {
+          // Refresh failed, clear only tokens and start OAuth flow
+          console.log('🔄 Access token expired and refresh failed. Starting reauthorization...');
+          await this.credentialsManager.clearTokens();
+          this.accessToken = null;
+          this.refreshToken = null;
+          
+          // Start OAuth flow (will reuse existing API keys)
+          await this.authenticate();
+          
+          // Retry the request with new token
+          return this.makeGraphQLRequest(query, variables);
         }
       }
 

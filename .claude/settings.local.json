@@ -13,7 +13,11 @@
       "WebFetch(domain:stackoverflow.com)",
       "Bash(npm run type-check:*)",
       "Bash(npx ts-node:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(find:*)",
+      "Bash(del:*)",
+      "Bash(npm run dev:*)",
+      "WebFetch(domain:www.anthropic.com)"
     ],
     "deny": []
   }

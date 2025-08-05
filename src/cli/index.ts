@@ -4,6 +4,7 @@ import inquirer from 'inquirer';
 import Table from 'cli-table3';
 import { UpWorkAPI } from '../core/UpWorkAPI';
 import { CredentialsManager } from '../core/CredentialsManager';
+import { AppliedJobsManager } from '../core/AppliedJobsManager';
 import config from '../config';
 
 // Generate UpWork job URL from title and ciphertext only
@@ -28,8 +29,11 @@ async function main() {
   console.log('🤖 Welcome to the UpWork Bid Generator');
   console.log('='.repeat(40));
 
-  // 1. Check for credentials
+  // 1. Initialize managers
   const credentialsManager = new CredentialsManager(config.upwork.credentialsFile);
+  const appliedJobsManager = new AppliedJobsManager();
+
+  // Check for credentials
   if (!credentialsManager.hasCredentials()) {
     console.log('❌ No UpWork API credentials found.');
     console.log('Please run `npx ts-node src/cli/index.ts --setup` to configure them.');
@@ -83,8 +87,8 @@ async function main() {
       return false;
     }
     
-    // Filter out jobs already applied to
-    if (job.applied) {
+    // Filter out jobs already applied to (check both UpWork API and local tracking)
+    if (job.applied || appliedJobsManager.hasApplied(job.id)) {
       return false;
     }
     
@@ -273,6 +277,42 @@ async function main() {
   console.log(`💼 Budget Type: ${selectedJob.hourlyBudgetType || 'N/A'}`);
   console.log(`👥 Freelancers to Hire: ${selectedJob.freelancersToHire || selectedJob.totalFreelancersToHire || 'N/A'}`);
   console.log(`✅ Already Applied: ${selectedJob.applied ? 'Yes' : 'No'}`);
+
+  // Ask if user wants to mark as applied
+  const { markAsApplied } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'markAsApplied',
+      message: 'Mark this job as applied to?',
+      default: false
+    }
+  ]);
+
+  if (markAsApplied) {
+    const { notes } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'notes',
+        message: 'Add notes (optional):',
+        default: ''
+      }
+    ]);
+
+    const success = appliedJobsManager.markAsApplied(
+      selectedJob.id,
+      selectedJob.title,
+      undefined, // proposalPath - will be added when proposal generation is implemented
+      notes || undefined
+    );
+
+    if (success) {
+      console.log('✅ Job marked as applied!');
+      const stats = appliedJobsManager.getStats();
+      console.log(`📊 Total applied jobs: ${stats.total}`);
+    } else {
+      console.log('❌ Failed to mark job as applied');
+    }
+  }
 
   console.log('\n👋 All done! Goodbye!');
 }

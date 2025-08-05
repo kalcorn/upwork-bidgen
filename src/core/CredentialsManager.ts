@@ -277,6 +277,49 @@ export class CredentialsManager {
     }
     return true;
   }
+
+  /**
+   * Clear expired tokens while preserving API keys
+   */
+  async clearTokens(): Promise<boolean> {
+    try {
+      const credentials = await this.loadCredentials();
+      if (credentials) {
+        // Preserve API keys, clear only tokens
+        const updatedCredentials: UpWorkCredentials = {
+          apiKey: credentials.apiKey,
+          apiSecret: credentials.apiSecret,
+          accessToken: '',
+          refreshToken: ''
+        };
+        
+        await this.saveCredentials(updatedCredentials);
+        console.log('🗑️ Cleared expired tokens, preserved API keys');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('❌ Failed to clear tokens:', error instanceof Error ? error.message : 'Unknown error');
+      return false;
+    }
+  }
+
+  /**
+   * Clear/delete stored credentials completely
+   */
+  async clearCredentials(): Promise<boolean> {
+    try {
+      const filePath = this.getCredentialsFilePath();
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log('🗑️ Cleared all credentials');
+      }
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to clear credentials:', error instanceof Error ? error.message : 'Unknown error');
+      return false;
+    }
+  }
 }
 
  
