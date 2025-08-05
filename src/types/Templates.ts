@@ -1,17 +1,14 @@
 // Template and proposal generation type definitions for personal use
-import { ProjectType } from './JobData';
 
 export interface Template {
   id: string;
   name: string;
   content: string;
-  category: ProjectType;
+  category: string;
 }
 
-import { JobData } from './JobData';
-
 export interface ProposalData {
-  jobData: JobData;
+  jobData: any; // Will be redefined later
   template: Template;
   customizations: ProposalCustomizations;
   generatedContent: string;

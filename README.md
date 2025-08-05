@@ -178,7 +178,11 @@ upwork-bidgen/
 └── output/                  # Generated proposals
 ├── templates/             # Complete template library (10 verticals)
 ├── output/               # Generated proposals and AI responses
-├── CLAUDE.md            # Comprehensive Claude integration guide
+├── ai/                  # AI guidance and configuration files
+│   ├── MANDATES.md      # Critical rules for all AI systems
+│   ├── WORKFLOWS.md     # Mandatory process checklists
+│   ├── CLAUDE.md        # Claude-specific integration guide
+│   └── GEMINI.md        # Gemini-specific integration guide
 └── package.json         # Project dependencies and scripts
 ```
 

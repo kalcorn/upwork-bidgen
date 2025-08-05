@@ -2,15 +2,104 @@
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import inquirer from 'inquirer';
 import { CredentialsManager } from './CredentialsManager';
-import { 
-  UpWorkCredentials, 
-  GraphQLRequest, 
-  GraphQLResponse, 
-  UpWorkJobResponse,
+import {
+  UpWorkCredentials,
+  GraphQLRequest,
+  GraphQLResponse,
   JobSearchResponse,
   JobDetailsResponse
 } from '../types/API';
-import { JobData, JobSearchParams, JobSearchResult, JobUrlParseResult } from '../types/JobData';
+// JobData interface with working scalar fields only (complex objects removed due to GraphQL errors)
+export interface JobData {
+  id: string;
+  title: string;
+  description: string;
+  ciphertext?: string;
+  duration?: string;
+  durationLabel?: string;
+  engagement?: string;
+  recordNumber?: string;
+  experienceLevel: string;
+  category?: string;
+  subcategory?: string;
+  freelancersToHire?: number;
+  enterprise?: boolean;
+  relevanceEncoded?: string;
+  totalApplicants?: number; // This is the proposal count field!
+  preferredFreelancerLocation?: string[];
+  preferredFreelancerLocationMandatory?: boolean;
+  premium?: boolean;
+  clientNotSureFields?: string;
+  clientPrivateFields?: string;
+  applied?: boolean;
+  createdDateTime?: string;
+  publishedDateTime?: string;
+  renewedDateTime?: string;
+  hourlyBudgetType?: string;
+  localJobUserDistance?: string;
+  totalFreelancersToHire?: number;
+  teamId?: string;
+  amount?: {
+    rawValue?: string;
+    currency?: string;
+    displayValue?: string;
+  };
+  hourlyBudgetMin?: {
+    rawValue?: string;
+    currency?: string;
+    displayValue?: string;
+  };
+  hourlyBudgetMax?: {
+    rawValue?: string;
+    currency?: string;
+    displayValue?: string;
+  };
+  client?: {
+    totalHires?: number;
+    totalPostedJobs?: number;
+    totalSpent?: {
+      rawValue?: number;
+      currency?: string;
+      displayValue?: string;
+    };
+    verificationStatus?: string;
+    location?: {
+      country?: string;
+      city?: string;
+      state?: string;
+      timezone?: string;
+    };
+    totalReviews?: number;
+    totalFeedback?: number;
+    companyName?: string;
+    hasFinancialPrivacy?: boolean;
+  } | undefined;
+}
+
+export interface JobSearchParams {
+  sortAttributes?: { field: string }[];
+  searchType?: string;
+  marketPlaceJobFilter?: {
+    hourlyRate_eq?: { rangeStart: number; rangeEnd: number; };
+    budgetRange_eq?: { rangeStart: number; rangeEnd: number; };
+    proposalRange_eq?: { rangeStart: number; rangeEnd: number; };
+    pagination_eq?: { after: string; first: number; };
+    categoryIds_any?: number[];
+  };
+}
+
+export interface JobSearchResult {
+  jobs: JobData[];
+  total: number;
+  hasMore: boolean;
+  nextOffset: string | null;
+}
+
+export interface JobUrlParseResult {
+  jobId: string;
+  isValid: boolean;
+  error?: string;
+}
 import { AppConfig } from '../types/Config';
 
 export class UpWorkAPI {
@@ -78,7 +167,7 @@ export class UpWorkAPI {
         success: true,
         message: 'OAuth 2.0 authentication successful'
       };
-      
+
     } catch (error) {
       console.error('❌ Authentication failed:', error instanceof Error ? error.message : 'Unknown error');
       return {
@@ -129,13 +218,13 @@ export class UpWorkAPI {
    * Start OAuth 2.0 authorization flow
    */
   private async startAuthorizationFlow(): Promise<{
-    success: boolean; 
-    message: string; 
+    success: boolean;
+    message: string;
     authorizationCode?: string;
   }> {
     try {
       const authUrl = `https://www.upwork.com/ab/account-security/oauth2/authorize?client_id=${this.credentials!.apiKey}&response_type=code&redirect_uri=${encodeURIComponent(this.config.upwork.oauthRedirectUri)}`;
-      
+
       console.log('\n🌐 Please visit this URL in your browser to authorize the application:');
       console.log(authUrl);
       console.log('\nAfter authorizing, you will be redirected to a localhost URL.');
@@ -152,8 +241,8 @@ export class UpWorkAPI {
 
       if (!code) {
         return {
-            success: false,
-            message: 'Could not find authorization code in the URL.'
+          success: false,
+          message: 'Could not find authorization code in the URL.'
         }
       }
 
@@ -175,7 +264,7 @@ export class UpWorkAPI {
    * Exchange authorization code for access token
    */
   private async getAccessTokenFromCode(authorizationCode: string): Promise<{
-    success: boolean; 
+    success: boolean;
     message: string;
   }> {
     try {
@@ -213,9 +302,9 @@ export class UpWorkAPI {
 
 
 
-  
 
-  
+
+
 
   /**
    * Refresh access token using refresh token
@@ -263,7 +352,7 @@ export class UpWorkAPI {
    * Make GraphQL request to UpWork API
    */
   async makeGraphQLRequest<T = any>(
-    query: string, 
+    query: string,
     variables: Record<string, any> = {}
   ): Promise<GraphQLResponse<T> | null> {
     try {
@@ -304,7 +393,7 @@ export class UpWorkAPI {
           return this.makeGraphQLRequest(query, variables);
         }
       }
-      
+
       console.error('GraphQL request failed:', error instanceof Error ? error.message : 'Unknown error');
       throw error; // Re-throw the error so CLI can see it
     }
@@ -385,120 +474,136 @@ export class UpWorkAPI {
       /\/jobs\/([a-f0-9]+)/,   // New format: /jobs/0123456789
       /\/jobs\/[^\/]+\~([a-f0-9]+)/  // Format with title: /jobs/title~0123456789
     ];
-    
+
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match) {
         return match[1] || null;
       }
     }
-    
+
     return null;
   }
 
   /**
    * Format raw job data into standardized format
    */
-  private formatJobData(jobData: UpWorkJobResponse): JobData {
-    const applicationRequirements = this.extractApplicationRequirements(jobData.description);
-
+  private formatJobData(jobData: any): JobData {
+    // Pass through working scalar fields only (complex objects removed due to GraphQL subselection errors)
     return {
       id: jobData.id,
       title: jobData.title,
       description: jobData.description,
-      budget: {
-        low: 0,
-        high: 0,
-        type: 'unknown',
-        currency: 'USD'
-      },
-      client: {
-        id: '',
-        name: '',
-        location: '',
-        rating: 0,
-        totalSpent: 0,
-        totalHired: 0,
-        totalReviews: 0,
-        avgHourlyRate: 0,
-        memberSince: '',
-        hireRate: 0
-      },
-      experience: this.mapExperienceLevel(jobData.experienceLevel),
-      postedDate: '',
-      skills: [],
-      applicationRequirements: {
-        ...applicationRequirements,
-        portfolioRequests: [],
-        technicalQuestions: [],
-        specificRequests: [],
-        hasStructuredApplication: false
-      },
-      projectType: 'misc',
-      complexity: 'medium',
-      budgetType: 'unknown',
-      secretWords: applicationRequirements.secretWords
+      ciphertext: jobData.ciphertext,
+      duration: jobData.duration,
+      durationLabel: jobData.durationLabel,
+      engagement: jobData.engagement,
+      recordNumber: jobData.recordNumber,
+      experienceLevel: jobData.experienceLevel,
+      category: jobData.category,
+      subcategory: jobData.subcategory,
+      freelancersToHire: jobData.freelancersToHire,
+      enterprise: jobData.enterprise,
+      relevanceEncoded: jobData.relevanceEncoded,
+      totalApplicants: jobData.totalApplicants,
+      preferredFreelancerLocation: jobData.preferredFreelancerLocation,
+      preferredFreelancerLocationMandatory: jobData.preferredFreelancerLocationMandatory,
+      premium: jobData.premium,
+      clientNotSureFields: jobData.clientNotSureFields,
+      clientPrivateFields: jobData.clientPrivateFields,
+      applied: jobData.applied,
+      createdDateTime: jobData.createdDateTime,
+      publishedDateTime: jobData.publishedDateTime,
+      renewedDateTime: jobData.renewedDateTime,
+      hourlyBudgetType: jobData.hourlyBudgetType,
+      localJobUserDistance: jobData.localJobUserDistance,
+      totalFreelancersToHire: jobData.totalFreelancersToHire,
+      teamId: jobData.teamId,
+      amount: jobData.amount,
+      hourlyBudgetMin: jobData.hourlyBudgetMin,
+      hourlyBudgetMax: jobData.hourlyBudgetMax,
+      client: jobData.client ? {
+        totalHires: jobData.client.totalHires,
+        totalPostedJobs: jobData.client.totalPostedJobs,
+        totalSpent: jobData.client.totalSpent,
+        verificationStatus: jobData.client.verificationStatus,
+        location: jobData.client.location,
+        totalReviews: jobData.client.totalReviews,
+        totalFeedback: jobData.client.totalFeedback,
+        companyName: jobData.client.companyName,
+        hasFinancialPrivacy: jobData.client.hasFinancialPrivacy
+      } : undefined
     };
   }
 
-  /**
-   * Extract application requirements from job description
-   */
-  private extractApplicationRequirements(description: string): {
-    secretWords: string[];
-    questions: string[];
-    attachments: boolean;
-    portfolio: boolean;
-    coverLetter: boolean;
-  } {
-    const lowerDesc = description.toLowerCase();
-    
-    // Extract secret words
-    const secretWordPatterns = [
-      /mention\s+["']([^"']+)["']/gi,
-      /include\s+["']([^"']+)["']/gi,
-      /write\s+["']([^"']+)["']/gi
-    ];
-    
-    const secretWords: string[] = [];
-    for (const pattern of secretWordPatterns) {
-      const matches = description.match(pattern);
-      if (matches) {
-        secretWords.push(...matches.map(match => match.replace(/^.*["']([^"']+)["'].*$/, '$1')));
-      }
-    }
-
-    // Detect requirements
-    const attachments = lowerDesc.includes('attachment') || lowerDesc.includes('file');
-    const portfolio = lowerDesc.includes('portfolio') || lowerDesc.includes('sample');
-    const coverLetter = lowerDesc.includes('cover letter') || lowerDesc.includes('proposal');
-
-    // Extract questions
-    const questionPatterns = [
-      /^\s*[-*]\s*(.+)\?/gm,
-      /^\s*\d+\.\s*(.+)\?/gm
-    ];
-    
-    const questions: string[] = [];
-    for (const pattern of questionPatterns) {
-      const matches = description.match(pattern);
-      if (matches) {
-        questions.push(...matches.map(match => match.replace(/^[-*\d\.\s]+/, '').trim()));
-      }
-    }
-
-    return {
-      secretWords,
-      questions,
-      attachments,
-      portfolio,
-      coverLetter
-    };
-  }
 
   /**
    * Search for jobs with filters
    */
+  /**
+   * Introspect GraphQL schema to discover available fields
+   */
+  async introspectJobSchema(): Promise<any> {
+    try {
+      const query = `
+        query IntrospectJobSchema {
+          __schema {
+            types {
+              name
+              description
+              fields {
+                name
+                type {
+                  name
+                  ofType {
+                    name
+                  }
+                }
+                description
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await this.makeGraphQLRequest(query);
+      if (!response || !response.data?.__schema) {
+        console.log('No schema data returned from introspection');
+        return null;
+      }
+
+      // Filter for job-related types
+      const jobTypes = response.data.__schema.types.filter((type: any) =>
+        type.name && (
+          type.name.includes('Job') ||
+          type.name.includes('Marketplace') ||
+          type.name.includes('Posting')
+        )
+      );
+
+      console.log('\n🔍 Job-related GraphQL Types:');
+      console.log('='.repeat(60));
+      jobTypes.forEach((type: any) => {
+        console.log(`\n📋 Type: ${type.name}`);
+        if (type.description) console.log(`   Description: ${type.description}`);
+        if (type.fields) {
+          console.log('   Available Fields:');
+          type.fields.forEach((field: any) => {
+            const typeName = field.type?.name || field.type?.ofType?.name || 'Unknown';
+            console.log(`     • ${field.name}: ${typeName}`);
+            if (field.description) console.log(`       - ${field.description}`);
+          });
+        }
+      });
+      console.log('='.repeat(60));
+
+      return jobTypes;
+    } catch (error) {
+      console.error('Failed to introspect schema:', error instanceof Error ? error.message : 'Unknown error');
+      return null;
+    }
+  }
+
   /**
    * Get available job categories
    */
@@ -531,11 +636,11 @@ export class UpWorkAPI {
   }
 
   /**
-   * Search for jobs using GraphQL with advanced filtering
+   * Search for jobs using GraphQL with filtering
    */
   async searchJobs(filters: JobSearchParams = {}): Promise<JobSearchResult | null> {
     try {
-      // Use the advanced search format you provided
+      // Use the search format you provided
       const query = `
                                 query SearchJobs($sortAttributes: [MarketplaceJobPostingSearchSortAttribute!], $searchType: MarketplaceJobPostingSearchType!, $marketPlaceJobFilter: MarketplaceJobPostingsSearchFilter!) {
           marketplaceJobPostingsSearch(
@@ -548,7 +653,84 @@ export class UpWorkAPI {
                 id
                 title
                 description
+                ciphertext
+                duration
+                durationLabel
+                engagement
+                recordNumber
                 experienceLevel
+                category
+                subcategory
+                freelancersToHire
+                enterprise
+                relevanceEncoded
+                totalApplicants
+                preferredFreelancerLocation
+                preferredFreelancerLocationMandatory
+                premium
+                clientNotSureFields
+                clientPrivateFields
+                applied
+                createdDateTime
+                publishedDateTime
+                renewedDateTime
+                hourlyBudgetType
+                localJobUserDistance
+                totalFreelancersToHire
+                teamId
+                amount {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                hourlyBudgetMin {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                hourlyBudgetMax {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                weeklyBudget {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                engagementDuration {
+                  id
+                  label
+                  weeks
+                }
+                relevance {
+                  id
+                  effectiveCandidates
+                  recommendedEffectiveCandidates
+                  uniqueImpressions
+                  publishTime
+                  hoursInactive
+                }
+                client {
+                  totalHires
+                  totalPostedJobs
+                  totalSpent {
+                    rawValue
+                    currency
+                    displayValue
+                  }
+                  verificationStatus
+                  location {
+                    country
+                    city
+                    state
+                    timezone
+                  }
+                  totalReviews
+                  totalFeedback
+                  companyName
+                  hasFinancialPrivacy
+                }
               }
             }
             pageInfo {
@@ -561,27 +743,27 @@ export class UpWorkAPI {
       `;
 
       const variables = {
-        
-        sortAttributes: filters.sortAttributes || { sort: ["RECENCY"] },
+        sortAttributes: filters.sortAttributes || { field: ["RECENCY"] },
         searchType: filters.searchType || "USER_JOBS_SEARCH",
-                marketPlaceJobFilter: filters.marketPlaceJobFilter || {
-          hourlyRate: {
-            from: 50,
-            to: null
-          },
-          fixedPriceBudget: {
-            from: 150,
-            to: null
-          },
-          pagination: {
-            after: "0",
-            first: 50
-          },
-          categoryIds: null
+        marketPlaceJobFilter: {
+          ...filters.marketPlaceJobFilter,
+          ...(filters.marketPlaceJobFilter?.hourlyRate_eq && {
+            hourlyRate_eq: filters.marketPlaceJobFilter.hourlyRate_eq
+          }),
+          ...(filters.marketPlaceJobFilter?.budgetRange_eq && {
+            budgetRange_eq: filters.marketPlaceJobFilter.budgetRange_eq
+          }),
+          ...(filters.marketPlaceJobFilter?.proposalRange_eq && {
+            proposalRange_eq: filters.marketPlaceJobFilter.proposalRange_eq
+          }),
+          pagination_eq: filters.marketPlaceJobFilter?.pagination_eq || config.upwork.searchFilters.marketPlaceJobFilter.pagination_eq,
+          ...(filters.marketPlaceJobFilter?.categoryIds_any && {
+            categoryIds_any: filters.marketPlaceJobFilter.categoryIds_any
+          })
         }
       };
 
-      console.log('🔍 Executing advanced job search with variables:', JSON.stringify(variables, null, 2));
+      console.log('🔍 Executing job search with variables:', JSON.stringify(variables, null, 2));
 
       const response = await this.makeGraphQLRequest<JobSearchResponse>(query, variables);
       if (!response || !response.data?.marketplaceJobPostingsSearch) {
@@ -589,8 +771,14 @@ export class UpWorkAPI {
         return null;
       }
 
+      // Debug: Raw API response (disabled for cleaner output)
+      console.log('\n🔍 Raw API Response:');
+      console.log('='.repeat(60));
+      console.log(JSON.stringify(response, null, 2));
+      console.log('='.repeat(60));
+
       const searchData = response.data.marketplaceJobPostingsSearch;
-      
+
       return {
         jobs: searchData.edges.map(edge => this.formatJobData(edge.node)),
         total: searchData.totalCount,
@@ -599,7 +787,7 @@ export class UpWorkAPI {
       };
 
     } catch (error) {
-      console.error('Failed to search jobs (advanced):', error instanceof Error ? error.message : 'Unknown error');
+      console.error('Failed to search jobs:', error instanceof Error ? error.message : 'Unknown error');
       if (error instanceof Error && error.stack) {
         console.error('Stack trace:', error.stack);
       }
@@ -607,14 +795,14 @@ export class UpWorkAPI {
     }
   }
 
-  
+
 
   /**
    * Parse job URL and extract information
    */
   parseJobUrl(url: string): JobUrlParseResult {
     const jobId = this.extractJobId(url);
-    
+
     if (!jobId) {
       return {
         jobId: '',
@@ -629,18 +817,6 @@ export class UpWorkAPI {
     };
   }
 
-  /**
-   * Map UpWork experience level to internal format
-   */
-  private mapExperienceLevel(upworkLevel: string): 'entry' | 'intermediate' | 'expert' | 'unknown' {
-    const levelMap: Record<string, 'entry' | 'intermediate' | 'expert' | 'unknown'> = {
-      'entry': 'entry',
-      'intermediate': 'intermediate',
-      'expert': 'expert'
-    };
-    
-    return levelMap[upworkLevel.toLowerCase()] || 'unknown';
-  }
 
   /**
    * Check if API is available and authenticated

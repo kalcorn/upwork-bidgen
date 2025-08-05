@@ -16,17 +16,18 @@ const config: AppConfig = {
       searchType: "USER_JOBS_SEARCH",
       marketPlaceJobFilter: {
         hourlyRate_eq: {
-          rangeStart: 50,
+          rangeStart: 75,
           rangeEnd: null
         },
         budgetRange_eq: {
-          rangeStart: 150,
+          rangeStart: 500,
           rangeEnd: null
         },
         pagination_eq: {
           after: "0",
-          first: 50
+          first: 25
         },
+        //jobType_eq: "HOURLY", // HOURLY | FIXED
         categoryIds_any: [
           "531770282580668420", // Data Science & Analytics
           "531770282580668419", // IT & Networking
@@ -40,8 +41,8 @@ const config: AppConfig = {
           "531770282584862733"  // Web Development
         ],
         proposalRange_eq: {
-          from: 0,
-          to: 20
+          rangeStart: 0,
+          rangeEnd: 20
         }
       }
     }

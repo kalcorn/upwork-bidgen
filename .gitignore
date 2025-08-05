@@ -63,3 +63,5 @@ Thumbs.db
 
 # Generated output files
 output/
+
+.claude/

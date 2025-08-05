@@ -9,7 +9,11 @@
       "WebFetch(domain:www.upwork.com)",
       "Bash(grep:*)",
       "Bash(rm:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(npm run type-check:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
