@@ -1,0 +1,257 @@
+query GetCompleteJobDetails($jobId: ID!) {
+  marketplaceJobPosting(id: $jobId) {
+    # Main job fields
+    id
+    workFlowState
+    canClientReceiveContractProposal
+    
+    # Content fields
+    content {
+      title
+      description
+    }
+    
+    # Classification fields
+    classification {
+      category {
+        id
+        preferredLabel
+        parentCategory {
+          id
+          preferredLabel
+        }
+      }
+      subCategory {
+        id
+        preferredLabel
+        parentCategory {
+          id
+          preferredLabel
+        }
+      }
+      occupation {
+        id
+        preferredLabel
+      }
+      skills {
+        id
+        preferredLabel
+        ontologySkill {
+          id
+          preferredLabel
+        }
+      }
+      additionalSkills {
+        id
+        preferredLabel
+        ontologySkill {
+          id
+          preferredLabel
+        }
+      }
+    }
+    
+    # Contract Terms
+    contractTerms {
+      contractStartDate
+      contractEndDate
+      contractType
+      onSiteType
+      personsToHire
+      experienceLevel
+      notSurePersonsToHire
+      notSureExperiencelevel
+      
+      # Fixed Price Contract Terms
+      fixedPriceContractTerms {
+        amount {
+          rawValue
+          currency
+          displayValue
+        }
+        maxAmount {
+          rawValue
+          currency
+          displayValue
+        }
+        engagementDuration {
+          id
+          label
+          weeks
+        }
+      }
+      
+      # Hourly Contract Terms
+      hourlyContractTerms {
+        engagementDuration {
+          id
+          label
+          weeks
+        }
+        engagementType
+        notSureProjectDuration
+        hourlyBudgetType
+        hourlyBudgetMin
+        hourlyBudgetMax
+      }
+    }
+    
+    # Contractor Selection
+    contractorSelection {
+      # Proposal Requirements
+      proposalRequirement {
+        coverLetterRequired
+        freelancerMilestonesAllowed
+        screeningQuestions {
+          question
+          sequenceNumber
+        }
+      }
+      
+      # Qualification Requirements
+      qualification {
+        # Add qualification fields when available
+        id
+      }
+      
+      # Location Requirements
+      location {
+        # Add location fields when available
+        id
+      }
+    }
+    
+    # Ownership Information
+    ownership {
+      company {
+        id
+        name
+        description
+      }
+      team {
+        id
+        name
+        description
+      }
+    }
+    
+    # Public Company Information
+    clientCompanyPublic {
+      id
+      legacyType
+      teamsEnabled
+      canHire
+      hidden
+      country {
+        name
+        code
+      }
+      state
+      city
+      timezone
+      accountingEntity
+      billingType
+      paymentVerification {
+        status
+        verifiedAt
+      }
+      agencyDetails {
+        # Add agency detail fields when available
+        id
+      }
+    }
+    
+    # Activity Statistics
+    activityStat {
+      # Applications and Bid Stats
+      applicationsBidStats {
+        avgRateBid {
+          rawValue
+          currency
+          displayValue
+        }
+        minRateBid {
+          rawValue
+          currency
+          displayValue
+        }
+        maxRateBid {
+          rawValue
+          currency
+          displayValue
+        }
+        avgInterviewedRateBid {
+          rawValue
+          currency
+          displayValue
+        }
+      }
+      
+      # Job Activity
+      jobActivity {
+        lastClientActivity
+        invitesSent
+        totalInvitedToInterview
+        totalHired
+        totalUnansweredInvites
+        totalOffered
+        totalRecommended
+      }
+    }
+    
+    # Annotations
+    annotations {
+      tags
+      customFields {
+        key
+        value
+      }
+    }
+    
+    # Attachments
+    attachments {
+      # Add attachment fields when available
+      id
+    }
+    
+    # Segmentation Data
+    segmentationData {
+      # Add segmentation fields when available
+      id
+    }
+    
+    # Additional Search Info
+    additionalSearchInfo {
+      # Add additional search info fields when available
+      id
+    }
+    
+    # Client Proposals (with pagination)
+    clientProposals(first: 10) {
+      edges {
+        node {
+          # Add client proposal fields when available
+          id
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+    
+    # Custom Fields (with organization filtering)
+    customFields(first: 10) {
+      edges {
+        node {
+          # Add custom field nodes when available
+          id
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}

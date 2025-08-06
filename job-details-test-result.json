@@ -1,0 +1,628 @@
+{
+  "id": "1953208290600315883",
+  "title": "Full-Stack Web Development Team Needed to Build an E-Commerce Store from Scratch",
+  "description": "Hi there, thank you for checking out my job post!\n\nWe're building a custom e-commerce platform inspired by boxed.gg and luxdrop.com. Users will purchase themed mystery boxes (shoes, streetwear, jewelry, etc.) and open them using a slot-machine-style animation to reveal randomized items.\n\nThis job is for Phase 1 — a fully functional MVP with the core user experience in place.\n\n✅ Scope of Work – MVP Features\n\n1. User Registration & Login\n- Email/password auth\n- JWT-based sessions\n- Dashboard showing balance and inventory\n\n2. Mystery Box Purchase Flow\n- Homepage with 1–2 boxes\n- Box detail page with price and description\n- “Open” button (requires enough credit)\n\n3. Slot-Style Unboxing Animation\n- Lightweight front-end animation (CSS or Canvas)\n- Randomized item reveal (based on predefined odds)\n- Item added to user inventory\n\n4. Store Credit / Wallet System\n- Track user balances\n- Adjust balance after purchase/sale\n- Add funds via Stripe (sandbox)\n\n5. Inventory Page\n- List of unboxed items\n- Option to sell items back for fixed credit (e.g. 70% of box cost)\n\n6. Basic Admin Panel\n- View users, balances, and inventories\n- Stats like total users, revenue, and credits in circulation\n\nDesign Note\n- No advanced custom UI work required\n- We’ll use a clean, responsive template\n- Focus is on working features, not polished visuals in this phase\n\n🚫 Not Included in This Phase \n- Physical item withdrawal or shipping\n- Multi-category browsing\n- Support ticket system\n- Provably fair or Web3 logic\n- Admin box builder\n- Custom UI design (we’ll use a clean template)\n\nPreferred Tech Stack\n- Frontend: React\n- Backend: Node.js with Express\n- Database: PostgreSQL or MongoDB\n- Stripe for payments\n\nShopify and no-code tools won’t work due to animation and wallet logic.\n\nBudget: $7000\nTimeline: 4-6 weeks\n\nLooking forward to your applications, thanks for reading!",
+  "experienceLevel": "INTERMEDIATE",
+  "freelancersToHire": 1,
+  "workFlowState": {
+    "status": "ACTIVE",
+    "closeResult": null
+  },
+  "canClientReceiveContractProposal": true,
+  "classification": {
+    "category": {
+      "id": "531770282580668418",
+      "preferredLabel": "Web, Mobile & Software Dev",
+      "ontologyId": "upworkOccupation:webmobileandsoftwaredev",
+      "type": [
+        "OCCUPATION"
+      ],
+      "entityStatus": "ACTIVE",
+      "definition": null,
+      "createdDateTime": "2018-08-20T19:39:33+0000",
+      "modifiedDateTime": "2023-12-19T19:18:21+0000"
+    },
+    "subCategory": {
+      "id": "531770282589057026",
+      "preferredLabel": "Ecommerce Development",
+      "ontologyId": "upworkOccupation:ecommercedevelopmentsubcategory",
+      "type": [
+        "OCCUPATION"
+      ],
+      "entityStatus": "ACTIVE",
+      "definition": null,
+      "createdDateTime": "2018-09-24T11:14:38+0000",
+      "modifiedDateTime": "2023-07-10T17:00:40+0000"
+    },
+    "occupation": {
+      "id": "1017484851352698949",
+      "preferredLabel": "Ecommerce Website Development",
+      "ontologyId": "upworkOccupation:ecommercedevelopment",
+      "type": [
+        "OCCUPATION"
+      ],
+      "entityStatus": "ACTIVE",
+      "definition": null,
+      "createdDateTime": "2018-08-20T19:39:31+0000",
+      "modifiedDateTime": "2023-12-19T19:18:11+0000"
+    },
+    "skills": [
+      {
+        "id": "1031626773660942336",
+        "preferredLabel": "React",
+        "ontologyId": "upwork:reactjs",
+        "type": [
+          "SKILL"
+        ],
+        "entityStatus": "ACTIVE",
+        "definition": null,
+        "createdDateTime": "2018-08-20T19:39:24+0000",
+        "modifiedDateTime": "2023-12-19T19:18:32+0000",
+        "altLabel": [
+          "React JS"
+        ],
+        "broader": [
+          "kg:30-10224",
+          "upwork:frontenddevelopmentattributegroup",
+          "upwork:AppleMobileDevelopmentFrameworks",
+          "upwork:MobileAppDevelopmentFramework",
+          "upwork:AndroidMobileDevelopmentFrameworks",
+          "upwork:ecommercedevelopmentskills",
+          "kg:30-10181",
+          "upwork:fullstackdevelopmentattributegroup"
+        ],
+        "broaderIds": [
+          "1737190624490860550",
+          "1110580578036994048",
+          "1062076139105275904",
+          "996364627912028160",
+          "1044183206231363584",
+          "1204836453983567872",
+          "1623716606421372928",
+          "1110580578586447872"
+        ],
+        "narrower": [],
+        "narrowerIds": [],
+        "dependsOn": [],
+        "dependsOnIds": [],
+        "replacedBy": null,
+        "replacedById": null,
+        "scopeNote": "React is an open-source JavaScript library for creating user interfaces that aims to address challenges encountered in developing single-page applications.",
+        "externalLink": [
+          "https://en.wikipedia.org/wiki/React_(JavaScript_library)"
+        ],
+        "exactMatch": [],
+        "exactMatchIds": [],
+        "closeMatch": [],
+        "closeMatchIds": [],
+        "legacySkillNid": "react-js",
+        "prettyName": null,
+        "legacySkillId": "703376982070034458",
+        "comment": null,
+        "attributeLevel": [],
+        "allowMultipleClient": false,
+        "allowMultipleFreelancer": false,
+        "allowOther": false,
+        "clientQuestion": null,
+        "clientTip": null,
+        "freelancerQuestion": null,
+        "freelancerTip": null,
+        "advancedClient": false,
+        "client": false,
+        "freelancer": false,
+        "requiredClient": false,
+        "requiredFreelancer": false,
+        "otherClientLabel": null,
+        "otherFreelancerLabel": null,
+        "presentationMode": null,
+        "priority": 5,
+        "isRequiredBy": [],
+        "isRequiredByIds": []
+      },
+      {
+        "id": "1171125441484271616",
+        "preferredLabel": "Custom Ecommerce Platform Development",
+        "ontologyId": "upwork:customecommerceplatform",
+        "type": [
+          "SKILL"
+        ],
+        "entityStatus": "ACTIVE",
+        "definition": null,
+        "createdDateTime": "2019-09-09T18:17:18+0000",
+        "modifiedDateTime": "2023-12-19T19:18:28+0000",
+        "altLabel": [],
+        "broader": [
+          "upwork:ecommercedevelopmentdeliverables"
+        ],
+        "broaderIds": [
+          "1204836453975179264"
+        ],
+        "narrower": [],
+        "narrowerIds": [],
+        "dependsOn": [],
+        "dependsOnIds": [],
+        "replacedBy": null,
+        "replacedById": null,
+        "scopeNote": null,
+        "externalLink": [],
+        "exactMatch": [],
+        "exactMatchIds": [],
+        "closeMatch": [
+          "upwork:ecommerceconsulting"
+        ],
+        "closeMatchIds": [
+          "1031626733781499904"
+        ],
+        "legacySkillNid": "custom-ecommerce-platform",
+        "prettyName": null,
+        "legacySkillId": "1158478215255613440",
+        "comment": null,
+        "attributeLevel": [],
+        "allowMultipleClient": false,
+        "allowMultipleFreelancer": false,
+        "allowOther": false,
+        "clientQuestion": null,
+        "clientTip": null,
+        "freelancerQuestion": null,
+        "freelancerTip": null,
+        "advancedClient": false,
+        "client": false,
+        "freelancer": false,
+        "requiredClient": false,
+        "requiredFreelancer": false,
+        "otherClientLabel": null,
+        "otherFreelancerLabel": null,
+        "presentationMode": null,
+        "priority": 2147483647,
+        "isRequiredBy": [],
+        "isRequiredByIds": []
+      }
+    ],
+    "additionalSkills": [
+      {
+        "id": "996364628025274383",
+        "preferredLabel": "JavaScript",
+        "ontologyId": "upwork:javascript",
+        "type": [
+          "SKILL"
+        ],
+        "entityStatus": "ACTIVE",
+        "definition": null,
+        "createdDateTime": "2018-08-20T19:39:18+0000",
+        "modifiedDateTime": "2023-12-19T19:18:36+0000",
+        "altLabel": [
+          "JS"
+        ],
+        "broader": [
+          "upwork:ProgrammingLanguages",
+          "upwork:functionalqaprogramminglanguages",
+          "upwork:MobileProgrammingLanguages",
+          "upwork:DataBaseUserInterfaceAndQuerySoftware",
+          "upwork:AndroidProgrammingLanguages",
+          "upwork:cmscustomizationprogramminglanguages",
+          "upwork:firmwareprogramminglanguages",
+          "upwork:webdesignlanguages",
+          "kg:30-10210",
+          "upwork:automationqaprogramminglanguages",
+          "upwork:frontendprogramminglanguages",
+          "upwork:ecommercedevelopmentskills",
+          "upwork:cmscustomizationattributegroup",
+          "kg:30-10038",
+          "kg:30-10228",
+          "upwork:gamingdevelopmentprogramminglanguages",
+          "upwork:fullstackdevelopmentlanguages",
+          "upwork:dataextractionlanguages",
+          "upwork:businessapplicationsdevelopmentskills",
+          "upwork:cmsdevelopmentattributegroup",
+          "upwork:blockchainattributegroup",
+          "upwork:desktopprogramminglanguages",
+          "upwork:cmsdevelopmentprogramminglanguages",
+          "upwork:scriptinglanguages",
+          "upwork:datavisualizationlanguages",
+          "upwork:solutionsarchitectureattributegroup",
+          "upwork:softwaredevelopmenttutoringattributegroup",
+          "kg:30-10180"
+        ],
+        "broaderIds": [
+          "1031626706472386560",
+          "1225465941632192512",
+          "996364627974942721",
+          "1031626693948194816",
+          "1031626692455022592",
+          "1225465934514458624",
+          "1225465940919160832",
+          "1225465963622928384",
+          "1737190624499249159",
+          "1225465930857025536",
+          "1110580578271875072",
+          "1204836453983567872",
+          "1110580522089172992",
+          "1517518368801644544",
+          "1737190624490860546",
+          "1225465941913210880",
+          "1204836457510977536",
+          "1253342873014382592",
+          "1270387300748214272",
+          "1110580522311471104",
+          "1110580502543716352",
+          "1225465937630826497",
+          "1225465934552207360",
+          "1225465956983345152",
+          "1253342873261846528",
+          "1110580699231408128",
+          "1110580698459656192",
+          "1623716606408790016"
+        ],
+        "narrower": [],
+        "narrowerIds": [],
+        "dependsOn": [],
+        "dependsOnIds": [],
+        "replacedBy": null,
+        "replacedById": null,
+        "scopeNote": "JavaScript is a prototype-based scripting language that is dynamic, weakly typed and has first-class functions. It is a multi-paradigm language, supporting object-oriented, imperative, and functional programming styles.",
+        "externalLink": [
+          "https://en.wikipedia.org/wiki/JavaScript"
+        ],
+        "exactMatch": [],
+        "exactMatchIds": [],
+        "closeMatch": [],
+        "closeMatchIds": [],
+        "legacySkillNid": "javascript",
+        "prettyName": null,
+        "legacySkillId": "475721704021065738",
+        "comment": null,
+        "attributeLevel": [],
+        "allowMultipleClient": false,
+        "allowMultipleFreelancer": false,
+        "allowOther": false,
+        "clientQuestion": null,
+        "clientTip": null,
+        "freelancerQuestion": null,
+        "freelancerTip": null,
+        "advancedClient": false,
+        "client": false,
+        "freelancer": false,
+        "requiredClient": false,
+        "requiredFreelancer": false,
+        "otherClientLabel": null,
+        "otherFreelancerLabel": null,
+        "presentationMode": null,
+        "priority": 3,
+        "isRequiredBy": [],
+        "isRequiredByIds": []
+      },
+      {
+        "id": "1031626779570716672",
+        "preferredLabel": "Shopify",
+        "ontologyId": "upwork:shopify",
+        "type": [
+          "SKILL"
+        ],
+        "entityStatus": "ACTIVE",
+        "definition": null,
+        "createdDateTime": "2018-08-20T19:39:25+0000",
+        "modifiedDateTime": "2024-03-22T19:41:58+0000",
+        "altLabel": [],
+        "broader": [
+          "kg:30-10237",
+          "upwork:ecommerceplatforms",
+          "kg:30-10186",
+          "upwork:websitebuilderplatform",
+          "upwork:marketingautomationtools",
+          "kg:30-10001",
+          "upwork:ecommercedevelopmentattributegroup",
+          "upwork:paidmediatools",
+          "upwork:campaignmanagementtools"
+        ],
+        "broaderIds": [
+          "1771260385691889664",
+          "1171125442998415360",
+          "1737190622750224391",
+          "1110580738603339776",
+          "1204836465488543744",
+          "1484275241510948864",
+          "1110580555631022080",
+          "1204836470358130688",
+          "1204836447612420096"
+        ],
+        "narrower": [],
+        "narrowerIds": [],
+        "dependsOn": [],
+        "dependsOnIds": [],
+        "replacedBy": null,
+        "replacedById": null,
+        "scopeNote": "Shopify is an e-commerce platform that allows individuals and businesses to create online stores. The Shopify platform includes a content management system that allows users to manage inventory, edit HTML and CSS code, create coupon and discount codes, and accept online payments online with...",
+        "externalLink": [
+          "https://en.wikipedia.org/wiki/Shopify"
+        ],
+        "exactMatch": [],
+        "exactMatchIds": [],
+        "closeMatch": [
+          "upwork:shopifytemplates"
+        ],
+        "closeMatchIds": [
+          "1031626779600076800"
+        ],
+        "legacySkillNid": "shopify",
+        "prettyName": null,
+        "legacySkillId": "475721704180449285",
+        "comment": null,
+        "attributeLevel": [],
+        "allowMultipleClient": false,
+        "allowMultipleFreelancer": false,
+        "allowOther": false,
+        "clientQuestion": null,
+        "clientTip": null,
+        "freelancerQuestion": null,
+        "freelancerTip": null,
+        "advancedClient": false,
+        "client": false,
+        "freelancer": false,
+        "requiredClient": false,
+        "requiredFreelancer": false,
+        "otherClientLabel": null,
+        "otherFreelancerLabel": null,
+        "presentationMode": null,
+        "priority": 2147483647,
+        "isRequiredBy": [],
+        "isRequiredByIds": []
+      },
+      {
+        "id": "1031626795181916160",
+        "preferredLabel": "Web Design",
+        "ontologyId": "upwork:webpagedesign",
+        "type": [
+          "SKILL"
+        ],
+        "entityStatus": "ACTIVE",
+        "definition": null,
+        "createdDateTime": "2018-08-20T19:39:29+0000",
+        "modifiedDateTime": "2023-12-19T19:18:38+0000",
+        "altLabel": [
+          "Full-Stack Design"
+        ],
+        "broader": [
+          "upwork:uxuidesignplatform",
+          "upwork:ecommercedevelopmentdeliverables",
+          "upwork:graphicdesignservicesgroup",
+          "kg:30-10058",
+          "upwork:webdesignskills",
+          "upwork:projectmanagementdeliverablegroup",
+          "upwork:artdirectionattributegroup",
+          "kg:30-10217"
+        ],
+        "broaderIds": [
+          "1110580728855777280",
+          "1204836453975179264",
+          "1356688448220827648",
+          "1534904364928679936",
+          "1225465963631316992",
+          "1110580667249840128",
+          "1110580487406473216",
+          "1737190624499249154"
+        ],
+        "narrower": [],
+        "narrowerIds": [],
+        "dependsOn": [],
+        "dependsOnIds": [],
+        "replacedBy": null,
+        "replacedById": null,
+        "scopeNote": "Web design is the process of planning and creating a website. Text, images, digital media and interactive elements are used by web designers to produce the page seen on the web browser.",
+        "externalLink": [
+          "https://en.wikipedia.org/wiki/Web_design"
+        ],
+        "exactMatch": [],
+        "exactMatchIds": [],
+        "closeMatch": [],
+        "closeMatchIds": [],
+        "legacySkillNid": "web-design",
+        "prettyName": null,
+        "legacySkillId": "475721704276918276",
+        "comment": null,
+        "attributeLevel": [],
+        "allowMultipleClient": false,
+        "allowMultipleFreelancer": false,
+        "allowOther": false,
+        "clientQuestion": null,
+        "clientTip": null,
+        "freelancerQuestion": null,
+        "freelancerTip": null,
+        "advancedClient": false,
+        "client": false,
+        "freelancer": false,
+        "requiredClient": false,
+        "requiredFreelancer": false,
+        "otherClientLabel": null,
+        "otherFreelancerLabel": null,
+        "presentationMode": null,
+        "priority": 5,
+        "isRequiredBy": [],
+        "isRequiredByIds": []
+      },
+      {
+        "id": "1484275089215770624",
+        "preferredLabel": "Full-Stack Development",
+        "ontologyId": "kg:50-26465",
+        "type": [
+          "SKILL"
+        ],
+        "entityStatus": "ACTIVE",
+        "definition": null,
+        "createdDateTime": "2022-01-20T21:21:58+0000",
+        "modifiedDateTime": "2023-12-19T19:18:24+0000",
+        "altLabel": [],
+        "broader": [
+          "upwork:fullstackdevelopmentdeliverablegroup"
+        ],
+        "broaderIds": [
+          "1110580578754220032"
+        ],
+        "narrower": [],
+        "narrowerIds": [],
+        "dependsOn": [],
+        "dependsOnIds": [],
+        "replacedBy": null,
+        "replacedById": null,
+        "scopeNote": null,
+        "externalLink": [],
+        "exactMatch": [],
+        "exactMatchIds": [],
+        "closeMatch": [],
+        "closeMatchIds": [],
+        "legacySkillNid": "full-stack-development",
+        "prettyName": null,
+        "legacySkillId": "1484275089215770624",
+        "comment": null,
+        "attributeLevel": [],
+        "allowMultipleClient": false,
+        "allowMultipleFreelancer": false,
+        "allowOther": false,
+        "clientQuestion": null,
+        "clientTip": null,
+        "freelancerQuestion": null,
+        "freelancerTip": null,
+        "advancedClient": false,
+        "client": false,
+        "freelancer": false,
+        "requiredClient": false,
+        "requiredFreelancer": false,
+        "otherClientLabel": null,
+        "otherFreelancerLabel": null,
+        "presentationMode": null,
+        "priority": 2147483647,
+        "isRequiredBy": [],
+        "isRequiredByIds": []
+      }
+    ]
+  },
+  "contractTerms": {
+    "contractStartDate": null,
+    "contractEndDate": null,
+    "contractType": "FIXED",
+    "onSiteType": null,
+    "personsToHire": 1,
+    "experienceLevel": "INTERMEDIATE",
+    "notSurePersonsToHire": false,
+    "notSureExperiencelevel": false,
+    "fixedPriceContractTerms": {
+      "amount": {
+        "rawValue": "7000.0",
+        "currency": "USD",
+        "displayValue": "7000.0"
+      },
+      "maxAmount": null,
+      "engagementDuration": {
+        "id": "474250516458926082",
+        "label": "1 to 3 months",
+        "weeks": 9
+      }
+    },
+    "hourlyContractTerms": null
+  },
+  "contractorSelection": {
+    "proposalRequirement": {
+      "coverLetterRequired": true,
+      "freelancerMilestonesAllowed": true,
+      "screeningQuestions": []
+    },
+    "qualification": {
+      "contractorType": "ALL",
+      "englishProficiency": "ANY",
+      "hasPortfolio": false,
+      "hoursWorked": 0,
+      "risingTalent": false,
+      "jobSuccessScore": 0,
+      "minEarning": "ANY",
+      "preferredGroups": [],
+      "preferenceTests": []
+    },
+    "location": {
+      "countries": [
+        "Ukraine"
+      ],
+      "states": [],
+      "timezones": [],
+      "localCheckRequired": false,
+      "localMarket": true,
+      "areas": [],
+      "notSureLocationPreference": false,
+      "localDescription": null,
+      "localFlexibilityDescription": null
+    }
+  },
+  "activityStat": {
+    "applicationsBidStats": {
+      "avgRateBid": {
+        "rawValue": "6833.333333333333",
+        "currency": "USD",
+        "displayValue": "6833.333333333333"
+      },
+      "minRateBid": {
+        "rawValue": "6000.0",
+        "currency": "USD",
+        "displayValue": "6000.0"
+      },
+      "maxRateBid": {
+        "rawValue": "7000.0",
+        "currency": "USD",
+        "displayValue": "7000.0"
+      },
+      "avgInterviewedRateBid": null
+    },
+    "jobActivity": {
+      "lastClientActivity": "2025-08-06T21:41:30.103Z",
+      "invitesSent": 9,
+      "totalInvitedToInterview": 0,
+      "totalHired": 0,
+      "totalUnansweredInvites": 9,
+      "totalOffered": 0,
+      "totalRecommended": 0
+    }
+  },
+  "annotations": {
+    "tags": [
+      "contractToHireSet",
+      "cjp_v1",
+      "C2HJobsOptInEducation"
+    ],
+    "customFields": [
+      {
+        "key": "siteSource",
+        "value": "desktop_rjp"
+      },
+      {
+        "key": "publishTime",
+        "value": "2025-08-06T21:35:20.602Z"
+      },
+      {
+        "key": "reuse",
+        "value": "1950748003503402390"
+      },
+      {
+        "key": "sourcingUpdateCount",
+        "value": "0"
+      },
+      {
+        "key": "sourcingUpdateForbidden",
+        "value": "false"
+      },
+      {
+        "key": "type",
+        "value": "RJP"
+      },
+      {
+        "key": "browser",
+        "value": "Chrome"
+      },
+      {
+        "key": "device",
+        "value": "Macintosh"
+      },
+      {
+        "key": "flowType",
+        "value": "RJP"
+      }
+    ]
+  },
+  "attachments": []
+}

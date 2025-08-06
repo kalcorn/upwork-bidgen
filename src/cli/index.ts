@@ -236,14 +236,18 @@ async function main() {
   // 4. Prompt for job number selection
   const { jobNumber } = await inquirer.prompt([
     {
-      type: 'number',
+      type: 'input',
       name: 'jobNumber',
       message: 'Enter job number to generate proposal for:',
       validate: (input) => {
-        if (!input || input < 1 || input > filteredJobs.length) {
-          return `Please enter a number between 1 and ${filteredJobs.length}`;
+        const num = parseInt(input, 10);
+        if (isNaN(num) || num < 1 || num > filteredJobs.length) {
+          return `Please enter a valid number between 1 and ${filteredJobs.length}`;
         }
         return true;
+      },
+      filter: (input) => {
+        return parseInt(input, 10);
       }
     },
   ]);
@@ -261,22 +265,370 @@ async function main() {
   console.log(`📋 Job ID: ${selectedJob.id}`);
   console.log(`🔐 CypherText: ${selectedJob.ciphertext || 'N/A'}`);
   
-  // Generate and display the UpWork URL without escape sequences
+  // Generate UpWork URL for comprehensive job details fetching
+  let jobUrl = '';
   if (selectedJob.ciphertext) {
-    const jobUrl = generateUpWorkJobURL(selectedJob.title, selectedJob.ciphertext);
+    jobUrl = generateUpWorkJobURL(selectedJob.title, selectedJob.ciphertext);
     console.log(`🔗 UpWork URL: ${jobUrl}`);
   }
-  
-  console.log(`📝 Description: ${selectedJob.description}...`);
-  console.log(`🎯 Experience Level: ${selectedJob.experienceLevel}`);
-  console.log(`📊 Total Applicants: ${selectedJob.totalApplicants || 'N/A'}`);
-  console.log(`📅 Posted: ${selectedJob.publishedDateTime || selectedJob.createdDateTime || 'N/A'}`);
-  console.log(`🏢 Category: ${selectedJob.category || 'N/A'} / ${selectedJob.subcategory || 'N/A'}`);
-  console.log(`⭐ Premium: ${selectedJob.premium ? 'Yes' : 'No'}`);
-  console.log(`🏢 Enterprise: ${selectedJob.enterprise ? 'Yes' : 'No'}`);
-  console.log(`💼 Budget Type: ${selectedJob.hourlyBudgetType || 'N/A'}`);
-  console.log(`👥 Freelancers to Hire: ${selectedJob.freelancersToHire || selectedJob.totalFreelancersToHire || 'N/A'}`);
-  console.log(`✅ Already Applied: ${selectedJob.applied ? 'Yes' : 'No'}`);
+
+  // Fetch comprehensive job details
+  console.log('\n🔍 Fetching comprehensive job details...');
+  try {
+    const comprehensiveJobData = await upworkApi.getJobDetails(selectedJob.id);
+    
+    if (comprehensiveJobData) {
+      console.log('\n' + '='.repeat(80));
+      console.log('📋 COMPREHENSIVE JOB DETAILS');
+      console.log('='.repeat(80));
+      
+      // Basic Information
+      console.log('\n🏷️  BASIC INFORMATION:');
+      console.log(`   Title: ${comprehensiveJobData.content?.title || selectedJob.title}`);
+      console.log(`   ID: ${comprehensiveJobData.id || selectedJob.id}`);
+      console.log(`   Workflow State: ${comprehensiveJobData.workFlowState || 'N/A'}`);
+      console.log(`   Can Receive Proposals: ${comprehensiveJobData.canClientReceiveContractProposal ? 'Yes' : 'No'}`);
+      
+      // Description
+      if (comprehensiveJobData.content?.description) {
+        console.log('\n📝 DESCRIPTION:');
+        console.log(`   ${comprehensiveJobData.content.description.substring(0, 500)}${comprehensiveJobData.content.description.length > 500 ? '...' : ''}`);
+      }
+
+      // Classification
+      if (comprehensiveJobData.classification) {
+        console.log('\n🏷️  CLASSIFICATION:');
+        if (comprehensiveJobData.classification.category) {
+          const cat = comprehensiveJobData.classification.category as any;
+          console.log(`   Category: ${cat.preferredLabel || cat.id}`);
+          if (cat.ontologyId) console.log(`     Ontology ID: ${cat.ontologyId}`);
+          if (cat.definition) console.log(`     Definition: ${cat.definition}`);
+          if (cat.type) console.log(`     Type: ${cat.type}`);
+          if (cat.entityStatus) console.log(`     Status: ${cat.entityStatus}`);
+          if (cat.createdDateTime) console.log(`     Created: ${cat.createdDateTime}`);
+        }
+        if (comprehensiveJobData.classification.subCategory) {
+          const subCat = comprehensiveJobData.classification.subCategory as any;
+          console.log(`   Subcategory: ${subCat.preferredLabel || subCat.id}`);
+          if (subCat.ontologyId) console.log(`     Ontology ID: ${subCat.ontologyId}`);
+          if (subCat.definition) console.log(`     Definition: ${subCat.definition}`);
+          if (subCat.type) console.log(`     Type: ${subCat.type}`);
+          if (subCat.entityStatus) console.log(`     Status: ${subCat.entityStatus}`);
+          if (subCat.createdDateTime) console.log(`     Created: ${subCat.createdDateTime}`);
+        }
+        if (comprehensiveJobData.classification.occupation) {
+          const occ = comprehensiveJobData.classification.occupation as any;
+          console.log(`   Occupation: ${occ.preferredLabel || occ.id}`);
+          if (occ.ontologyId) console.log(`     Ontology ID: ${occ.ontologyId}`);
+          if (occ.definition) console.log(`     Definition: ${occ.definition}`);
+          if (occ.type) console.log(`     Type: ${occ.type}`);
+          if (occ.entityStatus) console.log(`     Status: ${occ.entityStatus}`);
+        }
+        if (comprehensiveJobData.classification.skills && comprehensiveJobData.classification.skills.length > 0) {
+          console.log(`   Skills:`);
+          comprehensiveJobData.classification.skills.forEach(skill => {
+            const s = skill as any;
+            console.log(`     • ${s.preferredLabel || s.id}`);
+            if (s.ontologyId) console.log(`       Ontology ID: ${s.ontologyId}`);
+            if (s.definition) console.log(`       Definition: ${s.definition.substring(0, 100)}${s.definition.length > 100 ? '...' : ''}`);
+            if (s.broader) console.log(`       Broader: ${s.broader}`);
+            if (s.narrower) console.log(`       Narrower: ${s.narrower}`);
+            if (s.legacySkillNid) console.log(`       Legacy: ${s.legacySkillNid}`);
+            if (s.entityStatus) console.log(`       Status: ${s.entityStatus}`);
+          });
+        }
+        if (comprehensiveJobData.classification.additionalSkills && comprehensiveJobData.classification.additionalSkills.length > 0) {
+          console.log(`   Additional Skills:`);
+          comprehensiveJobData.classification.additionalSkills.forEach(skill => {
+            const s = skill as any;
+            console.log(`     • ${s.preferredLabel || s.id}`);
+            if (s.ontologyId) console.log(`       Ontology ID: ${s.ontologyId}`);
+            if (s.definition) console.log(`       Definition: ${s.definition.substring(0, 100)}${s.definition.length > 100 ? '...' : ''}`);
+            if (s.broader) console.log(`       Broader: ${s.broader}`);
+            if (s.narrower) console.log(`       Narrower: ${s.narrower}`);
+            if (s.legacySkillNid) console.log(`       Legacy: ${s.legacySkillNid}`);
+            if (s.entityStatus) console.log(`       Status: ${s.entityStatus}`);
+          });
+        }
+      }
+
+      // Contract Terms
+      if (comprehensiveJobData.contractTerms) {
+        console.log('\n💼 CONTRACT TERMS:');
+        console.log(`   Contract Type: ${comprehensiveJobData.contractTerms.contractType || 'N/A'}`);
+        console.log(`   Experience Level: ${comprehensiveJobData.contractTerms.experienceLevel || 'N/A'}${comprehensiveJobData.contractTerms.notSureExperiencelevel ? ' (Client unsure)' : ''}`);
+        console.log(`   Persons to Hire: ${comprehensiveJobData.contractTerms.personsToHire || 'N/A'}${comprehensiveJobData.contractTerms.notSurePersonsToHire ? ' (Client unsure)' : ''}`);
+        console.log(`   On-Site Type: ${comprehensiveJobData.contractTerms.onSiteType || 'N/A'}`);
+        
+        if (comprehensiveJobData.contractTerms.contractStartDate) {
+          console.log(`   Start Date: ${comprehensiveJobData.contractTerms.contractStartDate}`);
+        }
+        if (comprehensiveJobData.contractTerms.contractEndDate) {
+          console.log(`   End Date: ${comprehensiveJobData.contractTerms.contractEndDate}`);
+        }
+
+        // Fixed Price Contract Terms
+        if (comprehensiveJobData.contractTerms.fixedPriceContractTerms) {
+          const fixed = comprehensiveJobData.contractTerms.fixedPriceContractTerms;
+          console.log('\n💰 FIXED PRICE TERMS:');
+          if (fixed.amount) {
+            console.log(`   Amount: ${fixed.amount.displayValue || fixed.amount.rawValue} ${fixed.amount.currency || ''}`);
+          }
+          if (fixed.maxAmount) {
+            console.log(`   Max Amount: ${fixed.maxAmount.displayValue || fixed.maxAmount.rawValue} ${fixed.maxAmount.currency || ''}`);
+          }
+          if (fixed.engagementDuration) {
+            console.log(`   Duration: ${fixed.engagementDuration.label} (${fixed.engagementDuration.weeks} weeks)`);
+          }
+        }
+
+        // Hourly Contract Terms
+        if (comprehensiveJobData.contractTerms.hourlyContractTerms) {
+          const hourly = comprehensiveJobData.contractTerms.hourlyContractTerms;
+          console.log('\n⏰ HOURLY TERMS:');
+          if (hourly.hourlyBudgetMin || hourly.hourlyBudgetMax) {
+            console.log(`   Hourly Rate: $${hourly.hourlyBudgetMin || 'N/A'} - $${hourly.hourlyBudgetMax || 'N/A'}`);
+          }
+          console.log(`   Budget Type: ${hourly.hourlyBudgetType || 'N/A'}`);
+          console.log(`   Engagement Type: ${hourly.engagementType || 'N/A'}`);
+          if (hourly.engagementDuration) {
+            console.log(`   Duration: ${hourly.engagementDuration.label} (${hourly.engagementDuration.weeks} weeks)${hourly.notSureProjectDuration ? ' (Client unsure)' : ''}`);
+          } else if (hourly.notSureProjectDuration) {
+            console.log(`   Duration: Not specified (Client unsure)`);
+          }
+        }
+      }
+
+      // Proposal Requirements
+      if (comprehensiveJobData.contractorSelection?.proposalRequirement) {
+        const req = comprehensiveJobData.contractorSelection.proposalRequirement;
+        console.log('\n📋 PROPOSAL REQUIREMENTS:');
+        console.log(`   Cover Letter Required: ${req.coverLetterRequired ? 'Yes' : 'No'}`);
+        console.log(`   Milestones Allowed: ${req.freelancerMilestonesAllowed ? 'Yes' : 'No'}`);
+        
+        if (req.screeningQuestions && req.screeningQuestions.length > 0) {
+          console.log('\n❓ SCREENING QUESTIONS:');
+          req.screeningQuestions.forEach((q: any, index: number) => {
+            console.log(`   ${index + 1}. ${q.question}${q.required ? ' (Required)' : ''}`);
+            if (q.id) console.log(`     ID: ${q.id}`);
+            if (q.options && q.options.length > 0) {
+              console.log(`     Options:`);
+              q.options.forEach((option: any) => {
+                console.log(`       - ${option.option}${option.id ? ` (ID: ${option.id})` : ''}`);
+              });
+            }
+          });
+        }
+        
+        // Additional contractor selection info
+        if (comprehensiveJobData.contractorSelection?.qualification) {
+          const qual = comprehensiveJobData.contractorSelection.qualification;
+          console.log('\n✅ QUALIFICATION REQUIREMENTS:');
+          console.log(`   Contractor Type: ${qual.contractorType || 'N/A'}`);
+          console.log(`   English Proficiency: ${qual.englishProficiency || 'N/A'}`);
+          console.log(`   Has Portfolio: ${qual.hasPortfolio ? 'Yes' : 'No'}`);
+          console.log(`   Hours Worked: ${qual.hoursWorked || 'N/A'}`);
+          console.log(`   Rising Talent: ${qual.risingTalent ? 'Yes' : 'No'}`);
+          console.log(`   Job Success Score: ${qual.jobSuccessScore || 'N/A'}`);
+          if (qual.minEarning) {
+            console.log(`   Min Earning: ${qual.minEarning.displayValue || qual.minEarning.rawValue} ${qual.minEarning.currency || ''}`);
+          }
+          if (qual.preferredGroups) {
+            console.log(`   Preferred Groups: ${qual.preferredGroups}`);
+          }
+          if (qual.preferenceTests) {
+            console.log(`   Preference Tests: ${qual.preferenceTests}`);
+          }
+        }
+        
+        if (comprehensiveJobData.contractorSelection?.location) {
+          const loc = comprehensiveJobData.contractorSelection.location;
+          console.log('\n📍 LOCATION REQUIREMENTS:');
+          if (loc.countries) console.log(`   Countries: ${loc.countries}`);
+          if (loc.states) console.log(`   States: ${loc.states}`);
+          if (loc.timezones) console.log(`   Timezones: ${loc.timezones}`);
+          console.log(`   Local Check Required: ${loc.localCheckRequired ? 'Yes' : 'No'}`);
+          console.log(`   Local Market: ${loc.localMarket ? 'Yes' : 'No'}`);
+          if (loc.areas && loc.areas.length > 0) {
+            console.log(`   Areas:`);
+            loc.areas.forEach((area: any) => {
+              console.log(`     • ${area.name || area.id}`);
+            });
+          }
+          console.log(`   Not Sure Location Preference: ${loc.notSureLocationPreference ? 'Yes' : 'No'}`);
+          if (loc.localDescription) console.log(`   Local Description: ${loc.localDescription}`);
+          if (loc.localFlexibilityDescription) console.log(`   Local Flexibility: ${loc.localFlexibilityDescription}`);
+        }
+      }
+
+      // Company Information
+      if (comprehensiveJobData.clientCompanyPublic) {
+        const company = comprehensiveJobData.clientCompanyPublic;
+        console.log('\n🏢 CLIENT COMPANY:');
+        console.log(`   ID: ${company.id || 'N/A'}`);
+        console.log(`   Legacy Type: ${company.legacyType || 'N/A'}`);
+        console.log(`   Can Hire: ${company.canHire ? 'Yes' : 'No'}`);
+        console.log(`   Teams Enabled: ${company.teamsEnabled ? 'Yes' : 'No'}`);
+        console.log(`   Hidden Profile: ${company.hidden ? 'Yes' : 'No'}`);
+        console.log(`   Billing Type: ${company.billingType || 'N/A'}`);
+        if (company.accountingEntity) {
+          console.log(`   Accounting Entity: ${company.accountingEntity}`);
+        }
+        
+        if (company.country || company.city || company.state) {
+          let location = '';
+          if (company.city) location += company.city;
+          if (company.state) location += (location ? ', ' : '') + company.state;
+          if (company.country) {
+            const countryName = company.country.name || 'N/A';
+            location += (location ? ', ' : '') + countryName;
+          }
+          console.log(`   Location: ${location || 'N/A'}`);
+        }
+        if (company.timezone) {
+          console.log(`   Timezone: ${company.timezone}`);
+        }
+        if (company.agencyDetails) {
+          console.log(`   Agency Details ID: ${company.agencyDetails.id || 'N/A'}`);
+        }
+      }
+
+      // Ownership
+      if (comprehensiveJobData.ownership) {
+        console.log('\n🏛️  OWNERSHIP:');
+        if (comprehensiveJobData.ownership.company) {
+          console.log(`   Company: ${comprehensiveJobData.ownership.company.name || comprehensiveJobData.ownership.company.id}`);
+          if (comprehensiveJobData.ownership.company.description) {
+            console.log(`     Description: ${comprehensiveJobData.ownership.company.description}`);
+          }
+        }
+        if (comprehensiveJobData.ownership.team) {
+          console.log(`   Team: ${comprehensiveJobData.ownership.team.name || comprehensiveJobData.ownership.team.id}`);
+          if (comprehensiveJobData.ownership.team.description) {
+            console.log(`     Description: ${comprehensiveJobData.ownership.team.description}`);
+          }
+        }
+      }
+
+      // Activity Statistics
+      if (comprehensiveJobData.activityStat) {
+        console.log('\n📊 ACTIVITY STATISTICS:');
+        
+        // Job Activity
+        if (comprehensiveJobData.activityStat.jobActivity) {
+          const activity = comprehensiveJobData.activityStat.jobActivity;
+          console.log('   Job Activity:');
+          if (activity.lastClientActivity) console.log(`     Last Client Activity: ${activity.lastClientActivity}`);
+          if (activity.invitesSent) console.log(`     Invites Sent: ${activity.invitesSent}`);
+          if (activity.totalInvitedToInterview) console.log(`     Invited to Interview: ${activity.totalInvitedToInterview}`);
+          if (activity.totalHired) console.log(`     Total Hired: ${activity.totalHired}`);
+          if (activity.totalOffered) console.log(`     Total Offered: ${activity.totalOffered}`);
+          if (activity.totalRecommended) console.log(`     Total Recommended: ${activity.totalRecommended}`);
+          if (activity.totalUnansweredInvites) console.log(`     Unanswered Invites: ${activity.totalUnansweredInvites}`);
+        }
+
+        // Bid Statistics
+        if (comprehensiveJobData.activityStat.applicationsBidStats) {
+          const bidStats = comprehensiveJobData.activityStat.applicationsBidStats;
+          console.log('   Bid Statistics:');
+          if (bidStats.avgRateBid) {
+            console.log(`     Average Rate: ${bidStats.avgRateBid.displayValue || bidStats.avgRateBid.rawValue} ${bidStats.avgRateBid.currency || ''}`);
+          }
+          if (bidStats.minRateBid) {
+            console.log(`     Min Rate: ${bidStats.minRateBid.displayValue || bidStats.minRateBid.rawValue} ${bidStats.minRateBid.currency || ''}`);
+          }
+          if (bidStats.maxRateBid) {
+            console.log(`     Max Rate: ${bidStats.maxRateBid.displayValue || bidStats.maxRateBid.rawValue} ${bidStats.maxRateBid.currency || ''}`);
+          }
+          if (bidStats.avgInterviewedRateBid) {
+            console.log(`     Avg Interviewed Rate: ${bidStats.avgInterviewedRateBid.displayValue || bidStats.avgInterviewedRateBid.rawValue} ${bidStats.avgInterviewedRateBid.currency || ''}`);
+          }
+        }
+      }
+
+      // Tags and Custom Fields
+      if (comprehensiveJobData.annotations?.tags && comprehensiveJobData.annotations.tags.length > 0) {
+        console.log('\n🏷️  TAGS:');
+        console.log(`   ${comprehensiveJobData.annotations.tags.join(', ')}`);
+      }
+      
+      if (comprehensiveJobData.annotations?.customFields && comprehensiveJobData.annotations.customFields.length > 0) {
+        console.log('\n🔧 CUSTOM FIELDS:');
+        comprehensiveJobData.annotations.customFields.forEach(field => {
+          console.log(`   ${field.key}: ${field.value}`);
+        });
+      }
+
+      // Additional Data Sections
+      if (comprehensiveJobData.attachments && comprehensiveJobData.attachments.length > 0) {
+        console.log('\n📎 ATTACHMENTS:');
+        comprehensiveJobData.attachments.forEach(attachment => {
+          console.log(`   ID: ${attachment.id}`);
+        });
+      }
+
+      if (comprehensiveJobData.segmentationData && comprehensiveJobData.segmentationData.length > 0) {
+        console.log('\n📊 SEGMENTATION DATA:');
+        comprehensiveJobData.segmentationData.forEach((data: any) => {
+          console.log(`   ID: ${data.id}`);
+        });
+      }
+
+      if (comprehensiveJobData.additionalSearchInfo && comprehensiveJobData.additionalSearchInfo.length > 0) {
+        console.log('\n🔍 ADDITIONAL SEARCH INFO:');
+        comprehensiveJobData.additionalSearchInfo.forEach((info: any) => {
+          console.log(`   ID: ${info.id}`);
+        });
+      }
+
+      if (comprehensiveJobData.clientProposals?.edges && comprehensiveJobData.clientProposals.edges.length > 0) {
+        console.log('\n💼 CLIENT PROPOSALS:');
+        console.log(`   Found ${comprehensiveJobData.clientProposals.edges.length} proposal(s)`);
+        console.log(`   Has More: ${comprehensiveJobData.clientProposals.pageInfo?.hasNextPage ? 'Yes' : 'No'}`);
+        if (comprehensiveJobData.clientProposals.pageInfo?.endCursor) {
+          console.log(`   End Cursor: ${comprehensiveJobData.clientProposals.pageInfo.endCursor}`);
+        }
+      }
+
+      if (comprehensiveJobData.customFields?.edges && comprehensiveJobData.customFields.edges.length > 0) {
+        console.log('\n⚙️  CUSTOM FIELDS (Paginated):');
+        console.log(`   Found ${comprehensiveJobData.customFields.edges.length} field(s)`);
+        console.log(`   Has More: ${comprehensiveJobData.customFields.pageInfo?.hasNextPage ? 'Yes' : 'No'}`);
+        if (comprehensiveJobData.customFields.pageInfo?.endCursor) {
+          console.log(`   End Cursor: ${comprehensiveJobData.customFields.pageInfo.endCursor}`);
+        }
+      }
+
+      console.log('\n' + '='.repeat(80));
+      console.log('✅ COMPREHENSIVE JOB DETAILS COMPLETE - ALL AVAILABLE DATA DISPLAYED');
+      console.log('='.repeat(80));
+    } else {
+      console.log('⚠️  Could not fetch comprehensive job details, showing basic information:');
+      console.log(`📝 Description: ${selectedJob.description}...`);
+      console.log(`🎯 Experience Level: ${selectedJob.experienceLevel}`);
+      console.log(`📊 Total Applicants: ${selectedJob.totalApplicants || 'N/A'}`);
+      console.log(`📅 Posted: ${selectedJob.publishedDateTime || selectedJob.createdDateTime || 'N/A'}`);
+      console.log(`🏢 Category: ${selectedJob.category || 'N/A'} / ${selectedJob.subcategory || 'N/A'}`);
+      console.log(`⭐ Premium: ${selectedJob.premium ? 'Yes' : 'No'}`);
+      console.log(`🏢 Enterprise: ${selectedJob.enterprise ? 'Yes' : 'No'}`);
+      console.log(`💼 Budget Type: ${selectedJob.hourlyBudgetType || 'N/A'}`);
+      console.log(`👥 Freelancers to Hire: ${selectedJob.freelancersToHire || selectedJob.totalFreelancersToHire || 'N/A'}`);
+      console.log(`✅ Already Applied: ${selectedJob.applied ? 'Yes' : 'No'}`);
+    }
+  } catch (error) {
+    console.error('❌ Error fetching comprehensive job details:', error instanceof Error ? error.message : 'Unknown error');
+    console.log('⚠️  Falling back to basic information:');
+    console.log(`📝 Description: ${selectedJob.description}...`);
+    console.log(`🎯 Experience Level: ${selectedJob.experienceLevel}`);
+    console.log(`📊 Total Applicants: ${selectedJob.totalApplicants || 'N/A'}`);
+    console.log(`📅 Posted: ${selectedJob.publishedDateTime || selectedJob.createdDateTime || 'N/A'}`);
+    console.log(`🏢 Category: ${selectedJob.category || 'N/A'} / ${selectedJob.subcategory || 'N/A'}`);
+    console.log(`⭐ Premium: ${selectedJob.premium ? 'Yes' : 'No'}`);
+    console.log(`🏢 Enterprise: ${selectedJob.enterprise ? 'Yes' : 'No'}`);
+    console.log(`💼 Budget Type: ${selectedJob.hourlyBudgetType || 'N/A'}`);
+    console.log(`👥 Freelancers to Hire: ${selectedJob.freelancersToHire || selectedJob.totalFreelancersToHire || 'N/A'}`);
+    console.log(`✅ Already Applied: ${selectedJob.applied ? 'Yes' : 'No'}`);
+  }
 
   // Ask if user wants to mark as applied
   const { markAsApplied } = await inquirer.prompt([
@@ -337,6 +689,46 @@ async function main() {
     }
 
     await upworkApi.introspectJobSchema();
+  } else if (args.includes('--introspect-job')) {
+    // Job type introspection mode - supports type name parameter
+    const typeArgIndex = args.indexOf('--introspect-job') + 1;
+    const typeName = args[typeArgIndex] || 'MarketplaceJobPosting';
+    
+    console.log(`🔍 Introspecting ${typeName} type...`);
+    const upworkApi = new UpWorkAPI(config);
+    const authResult = await upworkApi.authenticate();
+
+    if (!authResult.success) {
+      console.log(`❌ Authentication failed: ${authResult.message}`);
+      return;
+    }
+
+    const typeData = await upworkApi.introspectType(typeName);
+    if (typeData) {
+      console.log(`\n📋 ${typeName} Type Details:`);
+      console.log('='.repeat(80));
+      console.log(`Type: ${typeData.name}`);
+      if (typeData.description) console.log(`Description: ${typeData.description}`);
+      console.log(`Kind: ${typeData.kind}`);
+      console.log('\nAvailable Fields:');
+      
+      if (typeData.fields) {
+        typeData.fields.forEach((field: any) => {
+          const getTypeName = (type: any): string => {
+            if (type.name) return type.name;
+            if (type.ofType) return getTypeName(type.ofType);
+            return 'Unknown';
+          };
+          
+          const typeName = getTypeName(field.type);
+          console.log(`  • ${field.name}: ${typeName}`);
+          if (field.description) console.log(`    - ${field.description}`);
+        });
+      }
+      console.log('='.repeat(80));
+    } else {
+      console.log(`❌ Type '${typeName}' not found or no data returned.`);
+    }
   } else if (args.includes('--categories')) {
     // Categories discovery mode
     console.log('📚 Fetching UpWork job categories...');

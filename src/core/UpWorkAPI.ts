@@ -9,8 +9,9 @@ import {
   JobSearchResponse,
   JobDetailsResponse
 } from '../types/API';
-// JobData interface with working scalar fields only (complex objects removed due to GraphQL errors)
+// Comprehensive JobData interface with all discovered fields from MarketplaceJobPosting
 export interface JobData {
+  // Basic fields
   id: string;
   title: string;
   description: string;
@@ -25,7 +26,7 @@ export interface JobData {
   freelancersToHire?: number;
   enterprise?: boolean;
   relevanceEncoded?: string;
-  totalApplicants?: number; // This is the proposal count field!
+  totalApplicants?: number;
   preferredFreelancerLocation?: string[];
   preferredFreelancerLocationMandatory?: boolean;
   premium?: boolean;
@@ -74,6 +75,202 @@ export interface JobData {
     companyName?: string;
     hasFinancialPrivacy?: boolean;
   } | undefined;
+
+  // New comprehensive fields from MarketplaceJobPosting introspection
+  workFlowState?: {
+    status?: string;
+    closeResult?: string;
+  };
+  canClientReceiveContractProposal?: boolean;
+  
+  // Content structure from API
+  content?: {
+    title?: string;
+    description?: string;
+  };
+  
+  // Classification
+  classification?: {
+    category?: {
+      id?: string;
+      preferredLabel?: string;
+      parentCategory?: {
+        id?: string;
+        preferredLabel?: string;
+      };
+    };
+    subCategory?: {
+      id?: string;
+      preferredLabel?: string;
+      parentCategory?: {
+        id?: string;
+        preferredLabel?: string;
+      };
+    };
+    occupation?: {
+      id?: string;
+      preferredLabel?: string;
+    };
+    skills?: Array<{
+      id?: string;
+      preferredLabel?: string;
+      ontologySkill?: {
+        id?: string;
+        preferredLabel?: string;
+      };
+    }>;
+    additionalSkills?: Array<{
+      id?: string;
+      preferredLabel?: string;
+      ontologySkill?: {
+        id?: string;
+        preferredLabel?: string;
+      };
+    }>;
+  };
+
+  // Contract Terms
+  contractTerms?: {
+    contractStartDate?: string;
+    contractEndDate?: string;
+    contractType?: string;
+    onSiteType?: string;
+    personsToHire?: number;
+    experienceLevel?: string;
+    notSurePersonsToHire?: boolean;
+    notSureExperiencelevel?: boolean;
+    fixedPriceContractTerms?: {
+      amount?: {
+        rawValue?: string;
+        currency?: string;
+        displayValue?: string;
+      };
+      maxAmount?: {
+        rawValue?: string;
+        currency?: string;
+        displayValue?: string;
+      };
+      engagementDuration?: {
+        id?: string;
+        label?: string;
+        weeks?: number;
+      };
+    };
+    hourlyContractTerms?: {
+      engagementDuration?: {
+        id?: string;
+        label?: string;
+        weeks?: number;
+      };
+      engagementType?: string;
+      notSureProjectDuration?: boolean;
+      hourlyBudgetType?: string;
+      hourlyBudgetMin?: string;
+      hourlyBudgetMax?: string;
+    };
+  };
+
+  // Contractor Selection
+  contractorSelection?: {
+    proposalRequirement?: {
+      coverLetterRequired?: boolean;
+      freelancerMilestonesAllowed?: boolean;
+      screeningQuestions?: Array<{
+        id?: string;
+        question?: string;
+        required?: boolean;
+        options?: Array<{
+          id?: string;
+          option?: string;
+        }>;
+      }>;
+    };
+    qualification?: any; // Will be defined based on actual API response
+    location?: any; // Will be defined based on actual API response
+  };
+
+  // Ownership
+  ownership?: {
+    company?: {
+      id?: string;
+      name?: string;
+      description?: string;
+    };
+    team?: {
+      id?: string;
+      name?: string;
+      description?: string;
+    };
+  };
+
+  // Client Company Public Info
+  clientCompanyPublic?: {
+    id?: string;
+    legacyType?: string;
+    teamsEnabled?: boolean;
+    canHire?: boolean;
+    hidden?: boolean;
+    country?: {
+      name?: string;
+    };
+    state?: string;
+    city?: string;
+    timezone?: string;
+    accountingEntity?: string;
+    billingType?: string;
+    agencyDetails?: any; // Will be defined based on actual API response
+  };
+
+  // Activity Statistics
+  activityStat?: {
+    applicationsBidStats?: {
+      avgRateBid?: {
+        rawValue?: string;
+        currency?: string;
+        displayValue?: string;
+      };
+      minRateBid?: {
+        rawValue?: string;
+        currency?: string;
+        displayValue?: string;
+      };
+      maxRateBid?: {
+        rawValue?: string;
+        currency?: string;
+        displayValue?: string;
+      };
+      avgInterviewedRateBid?: {
+        rawValue?: string;
+        currency?: string;
+        displayValue?: string;
+      };
+    };
+    jobActivity?: {
+      lastClientActivity?: string;
+      invitesSent?: number;
+      totalInvitedToInterview?: number;
+      totalHired?: number;
+      totalUnansweredInvites?: number;
+      totalOffered?: number;
+      totalRecommended?: number;
+    };
+  };
+
+  // Annotations
+  annotations?: {
+    tags?: string[];
+    customFields?: Array<{
+      key?: string;
+      value?: string;
+    }>;
+  };
+
+  // Additional fields that may be available
+  attachments?: any[];
+  segmentationData?: any;
+  additionalSearchInfo?: any;
+  clientProposals?: any;
+  customFields?: any;
 }
 
 export interface JobSearchParams {
@@ -95,11 +292,6 @@ export interface JobSearchResult {
   nextOffset: string | null;
 }
 
-export interface JobUrlParseResult {
-  jobId: string;
-  isValid: boolean;
-  error?: string;
-}
 import { AppConfig } from '../types/Config';
 
 export class UpWorkAPI {
@@ -509,9 +701,9 @@ export class UpWorkAPI {
   }
 
   /**
-   * Get job details from UpWork URL
+   * Get job details from UpWork job ID
    */
-  async getJobDetails(jobUrl: string): Promise<JobData | null> {
+  async getJobDetails(jobId: string): Promise<JobData | null> {
     try {
       // Authenticate first
       const authResult = await this.authenticate();
@@ -519,43 +711,306 @@ export class UpWorkAPI {
         throw new Error(`Authentication failed: ${authResult.message}`);
       }
 
-      const jobId = this.extractJobId(jobUrl);
       if (!jobId) {
-        throw new Error('Invalid job URL');
+        throw new Error('Job ID is required');
       }
 
       const query = `
-        query GetJobDetails($jobId: ID!) {
+        query GetCompleteJobDetails($jobId: ID!) {
           marketplaceJobPosting(id: $jobId) {
+            # Main job fields
             id
-            title
-            description
-            budget {
-              amount
-              currency
-              type
+            workFlowState {
+              status
+              closeResult
             }
-            client {
+            canClientReceiveContractProposal
+            
+            # Content fields
+            content {
+              title
+              description
+            }
+            
+            # Classification fields
+            classification {
+              category {
+                id
+                preferredLabel
+                ontologyId
+                type
+                entityStatus
+                definition
+                createdDateTime
+                modifiedDateTime
+              }
+              subCategory {
+                id
+                preferredLabel
+                ontologyId
+                type
+                entityStatus
+                definition
+                createdDateTime
+                modifiedDateTime
+              }
+              occupation {
+                id
+                preferredLabel
+                ontologyId
+                type
+                entityStatus
+                definition
+                createdDateTime
+                modifiedDateTime
+              }
+              skills {
+                id
+                preferredLabel
+                ontologyId
+                type
+                entityStatus
+                definition
+                createdDateTime
+                modifiedDateTime
+                altLabel
+                broader
+                broaderIds
+                narrower
+                narrowerIds
+                dependsOn
+                dependsOnIds
+                replacedBy
+                replacedById
+                scopeNote
+                externalLink
+                exactMatch
+                exactMatchIds
+                closeMatch
+                closeMatchIds
+                legacySkillNid
+                prettyName
+                legacySkillId
+                comment
+                attributeLevel
+                allowMultipleClient
+                allowMultipleFreelancer
+                allowOther
+                clientQuestion
+                clientTip
+                freelancerQuestion
+                freelancerTip
+                advancedClient
+                client
+                freelancer
+                requiredClient
+                requiredFreelancer
+                otherClientLabel
+                otherFreelancerLabel
+                presentationMode
+                priority
+                isRequiredBy
+                isRequiredByIds
+              }
+              additionalSkills {
+                id
+                preferredLabel
+                ontologyId
+                type
+                entityStatus
+                definition
+                createdDateTime
+                modifiedDateTime
+                altLabel
+                broader
+                broaderIds
+                narrower
+                narrowerIds
+                dependsOn
+                dependsOnIds
+                replacedBy
+                replacedById
+                scopeNote
+                externalLink
+                exactMatch
+                exactMatchIds
+                closeMatch
+                closeMatchIds
+                legacySkillNid
+                prettyName
+                legacySkillId
+                comment
+                attributeLevel
+                allowMultipleClient
+                allowMultipleFreelancer
+                allowOther
+                clientQuestion
+                clientTip
+                freelancerQuestion
+                freelancerTip
+                advancedClient
+                client
+                freelancer
+                requiredClient
+                requiredFreelancer
+                otherClientLabel
+                otherFreelancerLabel
+                presentationMode
+                priority
+                isRequiredBy
+                isRequiredByIds
+              }
+            }
+            
+            # Contract Terms
+            contractTerms {
+              contractStartDate
+              contractEndDate
+              contractType
+              onSiteType
+              personsToHire
+              experienceLevel
+              notSurePersonsToHire
+              notSureExperiencelevel
+              
+              # Fixed Price Contract Terms
+              fixedPriceContractTerms {
+                amount {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                maxAmount {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                engagementDuration {
+                  id
+                  label
+                  weeks
+                }
+              }
+              
+              # Hourly Contract Terms
+              hourlyContractTerms {
+                engagementDuration {
+                  id
+                  label
+                  weeks
+                }
+                engagementType
+                notSureProjectDuration
+                hourlyBudgetType
+                hourlyBudgetMin
+                hourlyBudgetMax
+              }
+            }
+            
+            # Contractor Selection
+            contractorSelection {
+              # Proposal Requirements
+              proposalRequirement {
+                coverLetterRequired
+                freelancerMilestonesAllowed
+                screeningQuestions {
+                  question
+                  sequenceNumber
+                }
+              }
+              
+              # Qualification Requirements
+              qualification {
+                contractorType
+                englishProficiency
+                hasPortfolio
+                hoursWorked
+                risingTalent
+                jobSuccessScore
+                minEarning
+                preferredGroups {
+                  id
+                  name
+                }
+                preferenceTests {
+                  id
+                  name
+                }
+              }
+              
+              # Location Requirements
+              location {
+                countries
+                states
+                timezones
+                localCheckRequired
+                localMarket
+                areas {
+                  id
+                  name
+                }
+                notSureLocationPreference
+                localDescription
+                localFlexibilityDescription
+              }
+            }
+            
+            
+            
+            # Activity Statistics
+            activityStat {
+              # Applications and Bid Stats
+              applicationsBidStats {
+                avgRateBid {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                minRateBid {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                maxRateBid {
+                  rawValue
+                  currency
+                  displayValue
+                }
+                avgInterviewedRateBid {
+                  rawValue
+                  currency
+                  displayValue
+                }
+              }
+              
+              # Job Activity
+              jobActivity {
+                lastClientActivity
+                invitesSent
+                totalInvitedToInterview
+                totalHired
+                totalUnansweredInvites
+                totalOffered
+                totalRecommended
+              }
+            }
+            
+            # Annotations
+            annotations {
+              tags
+              customFields {
+                key
+                value
+              }
+            }
+            
+            # Attachments
+            attachments {
               id
-              name
-              location
-              rating
-              totalSpent
-              totalHired
-              totalReviews
-              avgHourlyRate
-              memberSince
             }
-            experience
-            postedDate
-            skills
-            applicationRequirements {
-              secretWords
-              questions
-              attachments
-              portfolio
-              coverLetter
-            }
+            
+            
+            
           }
         }
       `;
@@ -573,82 +1028,168 @@ export class UpWorkAPI {
     }
   }
 
-  /**
-   * Extract job ID from UpWork URL
-   */
-  private extractJobId(url: string): string | null {
-    // Try different URL patterns
-    const patterns = [
-      /\/jobs\/~([a-f0-9]+)/,  // Old format: /jobs/~0123456789
-      /\/jobs\/([a-f0-9]+)/,   // New format: /jobs/0123456789
-      /\/jobs\/[^\/]+\~([a-f0-9]+)/  // Format with title: /jobs/title~0123456789
-    ];
-
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) {
-        return match[1] || null;
-      }
-    }
-
-    return null;
-  }
 
   /**
    * Format raw job data into standardized format
    */
   private formatJobData(jobData: any): JobData {
-    // Pass through working scalar fields only (complex objects removed due to GraphQL subselection errors)
-    return {
-      id: jobData.id,
-      title: jobData.title,
-      description: jobData.description,
-      ciphertext: jobData.ciphertext,
-      duration: jobData.duration,
-      durationLabel: jobData.durationLabel,
-      engagement: jobData.engagement,
-      recordNumber: jobData.recordNumber,
-      experienceLevel: jobData.experienceLevel,
-      category: jobData.category,
-      subcategory: jobData.subcategory,
-      freelancersToHire: jobData.freelancersToHire,
-      enterprise: jobData.enterprise,
-      relevanceEncoded: jobData.relevanceEncoded,
-      totalApplicants: jobData.totalApplicants,
-      preferredFreelancerLocation: jobData.preferredFreelancerLocation,
-      preferredFreelancerLocationMandatory: jobData.preferredFreelancerLocationMandatory,
-      premium: jobData.premium,
-      clientNotSureFields: jobData.clientNotSureFields,
-      clientPrivateFields: jobData.clientPrivateFields,
-      applied: jobData.applied,
-      createdDateTime: jobData.createdDateTime,
-      publishedDateTime: jobData.publishedDateTime,
-      renewedDateTime: jobData.renewedDateTime,
-      hourlyBudgetType: jobData.hourlyBudgetType,
-      localJobUserDistance: jobData.localJobUserDistance,
-      totalFreelancersToHire: jobData.totalFreelancersToHire,
-      teamId: jobData.teamId,
-      amount: jobData.amount,
-      hourlyBudgetMin: jobData.hourlyBudgetMin,
-      hourlyBudgetMax: jobData.hourlyBudgetMax,
-      client: jobData.client ? {
-        totalHires: jobData.client.totalHires,
-        totalPostedJobs: jobData.client.totalPostedJobs,
-        totalSpent: jobData.client.totalSpent,
-        verificationStatus: jobData.client.verificationStatus,
-        location: jobData.client.location,
-        totalReviews: jobData.client.totalReviews,
-        totalFeedback: jobData.client.totalFeedback,
-        companyName: jobData.client.companyName,
-        hasFinancialPrivacy: jobData.client.hasFinancialPrivacy
-      } : undefined
-    };
+    // Handle both search results and detailed job data formats
+    const isDetailedData = jobData.content || jobData.classification || jobData.contractTerms;
+    
+    if (isDetailedData) {
+      // This is comprehensive job data from marketplaceJobPosting
+      return {
+        // Basic fields
+        id: jobData.id,
+        title: jobData.content?.title || jobData.title,
+        description: jobData.content?.description || jobData.description,
+        ciphertext: jobData.ciphertext,
+        duration: jobData.duration,
+        durationLabel: jobData.durationLabel,
+        engagement: jobData.engagement,
+        recordNumber: jobData.recordNumber,
+        experienceLevel: jobData.experienceLevel || jobData.contractTerms?.experienceLevel,
+        category: jobData.category,
+        subcategory: jobData.subcategory,
+        freelancersToHire: jobData.freelancersToHire || jobData.contractTerms?.personsToHire,
+        enterprise: jobData.enterprise,
+        relevanceEncoded: jobData.relevanceEncoded,
+        totalApplicants: jobData.totalApplicants,
+        preferredFreelancerLocation: jobData.preferredFreelancerLocation,
+        preferredFreelancerLocationMandatory: jobData.preferredFreelancerLocationMandatory,
+        premium: jobData.premium,
+        clientNotSureFields: jobData.clientNotSureFields,
+        clientPrivateFields: jobData.clientPrivateFields,
+        applied: jobData.applied,
+        createdDateTime: jobData.createdDateTime,
+        publishedDateTime: jobData.publishedDateTime,
+        renewedDateTime: jobData.renewedDateTime,
+        hourlyBudgetType: jobData.hourlyBudgetType,
+        localJobUserDistance: jobData.localJobUserDistance,
+        totalFreelancersToHire: jobData.totalFreelancersToHire,
+        teamId: jobData.teamId,
+        amount: jobData.amount,
+        hourlyBudgetMin: jobData.hourlyBudgetMin,
+        hourlyBudgetMax: jobData.hourlyBudgetMax,
+        client: jobData.client,
+        
+        // Comprehensive fields
+        workFlowState: jobData.workFlowState,
+        canClientReceiveContractProposal: jobData.canClientReceiveContractProposal,
+        classification: jobData.classification,
+        contractTerms: jobData.contractTerms,
+        contractorSelection: jobData.contractorSelection,
+        ownership: jobData.ownership,
+        clientCompanyPublic: jobData.clientCompanyPublic,
+        activityStat: jobData.activityStat,
+        annotations: jobData.annotations,
+        attachments: jobData.attachments,
+        segmentationData: jobData.segmentationData,
+        additionalSearchInfo: jobData.additionalSearchInfo,
+        clientProposals: jobData.clientProposals,
+        customFields: jobData.customFields
+      };
+    } else {
+      // This is basic search result data - pass through existing fields
+      return {
+        id: jobData.id,
+        title: jobData.title,
+        description: jobData.description,
+        ciphertext: jobData.ciphertext,
+        duration: jobData.duration,
+        durationLabel: jobData.durationLabel,
+        engagement: jobData.engagement,
+        recordNumber: jobData.recordNumber,
+        experienceLevel: jobData.experienceLevel,
+        category: jobData.category,
+        subcategory: jobData.subcategory,
+        freelancersToHire: jobData.freelancersToHire,
+        enterprise: jobData.enterprise,
+        relevanceEncoded: jobData.relevanceEncoded,
+        totalApplicants: jobData.totalApplicants,
+        preferredFreelancerLocation: jobData.preferredFreelancerLocation,
+        preferredFreelancerLocationMandatory: jobData.preferredFreelancerLocationMandatory,
+        premium: jobData.premium,
+        clientNotSureFields: jobData.clientNotSureFields,
+        clientPrivateFields: jobData.clientPrivateFields,
+        applied: jobData.applied,
+        createdDateTime: jobData.createdDateTime,
+        publishedDateTime: jobData.publishedDateTime,
+        renewedDateTime: jobData.renewedDateTime,
+        hourlyBudgetType: jobData.hourlyBudgetType,
+        localJobUserDistance: jobData.localJobUserDistance,
+        totalFreelancersToHire: jobData.totalFreelancersToHire,
+        teamId: jobData.teamId,
+        amount: jobData.amount,
+        hourlyBudgetMin: jobData.hourlyBudgetMin,
+        hourlyBudgetMax: jobData.hourlyBudgetMax,
+        client: jobData.client ? {
+          totalHires: jobData.client.totalHires,
+          totalPostedJobs: jobData.client.totalPostedJobs,
+          totalSpent: jobData.client.totalSpent,
+          verificationStatus: jobData.client.verificationStatus,
+          location: jobData.client.location,
+          totalReviews: jobData.client.totalReviews,
+          totalFeedback: jobData.client.totalFeedback,
+          companyName: jobData.client.companyName,
+          hasFinancialPrivacy: jobData.client.hasFinancialPrivacy
+        } : undefined
+      };
+    }
   }
 
 
   /**
    * Search for jobs with filters
    */
+  /**
+   * Introspect specific GraphQL type to get all its fields
+   */
+  async introspectType(typeName: string): Promise<any> {
+    try {
+      const query = `
+        query IntrospectType($typeName: String!) {
+          __type(name: $typeName) {
+            name
+            description
+            kind
+            fields {
+              name
+              description
+              type {
+                name
+                kind
+                ofType {
+                  name
+                  kind
+                  ofType {
+                    name
+                    kind
+                    ofType {
+                      name
+                      kind
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await this.makeGraphQLRequest(query, { typeName });
+      if (!response || !response.data?.__type) {
+        console.log(`No type data returned for: ${typeName}`);
+        return null;
+      }
+
+      return response.data.__type;
+    } catch (error) {
+      console.error(`Failed to introspect type ${typeName}:`, error instanceof Error ? error.message : 'Unknown error');
+      return null;
+    }
+  }
+
   /**
    * Introspect GraphQL schema to discover available fields
    */
@@ -906,25 +1447,6 @@ export class UpWorkAPI {
 
 
 
-  /**
-   * Parse job URL and extract information
-   */
-  parseJobUrl(url: string): JobUrlParseResult {
-    const jobId = this.extractJobId(url);
-
-    if (!jobId) {
-      return {
-        jobId: '',
-        isValid: false,
-        error: 'Invalid UpWork job URL format'
-      };
-    }
-
-    return {
-      jobId,
-      isValid: true
-    };
-  }
 
 
   /**

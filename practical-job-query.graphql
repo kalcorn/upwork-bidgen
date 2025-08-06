@@ -1,0 +1,181 @@
+# Practical Job Query for UpWork API
+# This query includes fields that are known to work with the current API
+# Based on the existing search query structure from UpWorkAPI.ts
+
+query GetJobDetails($jobId: ID!) {
+  marketplaceJobPosting(id: $jobId) {
+    # Core identification
+    id
+    
+    # Content
+    content {
+      title
+      description
+    }
+    
+    # Contract Terms - Budget Information
+    contractTerms {
+      contractType
+      personsToHire
+      experienceLevel
+      
+      # Fixed Price Terms
+      fixedPriceContractTerms {
+        amount {
+          rawValue
+          currency
+          displayValue
+        }
+        maxAmount {
+          rawValue
+          currency
+          displayValue
+        }
+        engagementDuration {
+          id
+          label
+          weeks
+        }
+      }
+      
+      # Hourly Terms  
+      hourlyContractTerms {
+        hourlyBudgetMin
+        hourlyBudgetMax
+        hourlyBudgetType
+        engagementDuration {
+          id
+          label
+          weeks
+        }
+      }
+    }
+    
+    # Classification - Categories and Skills
+    classification {
+      category {
+        id
+        preferredLabel
+      }
+      subCategory {
+        id
+        preferredLabel
+      }
+      skills {
+        id
+        preferredLabel
+      }
+    }
+    
+    # Activity Statistics
+    activityStat {
+      applicationsBidStats {
+        avgRateBid {
+          rawValue
+          currency
+          displayValue
+        }
+        minRateBid {
+          rawValue
+          currency
+          displayValue
+        }
+        maxRateBid {
+          rawValue
+          currency
+          displayValue
+        }
+      }
+      
+      jobActivity {
+        totalHired
+        invitesSent
+        totalInvitedToInterview
+        lastClientActivity
+      }
+    }
+    
+    # Client Company Information
+    clientCompanyPublic {
+      id
+      country {
+        name
+        code
+      }
+      city
+      state
+      timezone
+      paymentVerification {
+        status
+      }
+    }
+    
+    # Contractor Selection Requirements
+    contractorSelection {
+      proposalRequirement {
+        coverLetterRequired
+        screeningQuestions {
+          question
+          sequenceNumber
+        }
+      }
+    }
+    
+    # Annotations
+    annotations {
+      tags
+    }
+    
+    # Ownership
+    ownership {
+      company {
+        id
+        name
+      }
+    }
+  }
+}
+
+# Alternative simpler query for basic job information
+query GetBasicJobDetails($jobId: ID!) {
+  marketplaceJobPosting(id: $jobId) {
+    id
+    
+    content {
+      title
+      description
+    }
+    
+    contractTerms {
+      experienceLevel
+      personsToHire
+      
+      fixedPriceContractTerms {
+        amount {
+          rawValue
+          displayValue
+        }
+      }
+      
+      hourlyContractTerms {
+        hourlyBudgetMin
+        hourlyBudgetMax
+      }
+    }
+    
+    classification {
+      category {
+        preferredLabel
+      }
+      subCategory {
+        preferredLabel
+      }
+    }
+    
+    activityStat {
+      jobActivity {
+        totalHired
+      }
+    }
+  }
+}

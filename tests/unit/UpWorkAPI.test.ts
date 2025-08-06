@@ -64,39 +64,6 @@ describe('UpWorkAPI', () => {
     api = new UpWorkAPI(mockConfig);
   });
 
-  describe('parseJobUrl', () => {
-    it('should parse valid UpWork job URLs', () => {
-      const validUrls = [
-        'https://www.upwork.com/jobs/~0123456789abcdef',
-        'https://www.upwork.com/jobs/~fedcba9876543210',
-        'https://www.upwork.com/jobs/~1234567890abcdef'
-      ];
-
-      validUrls.forEach(url => {
-        const result = api.parseJobUrl(url);
-        expect(result.isValid).toBe(true);
-        expect(result.jobId).toMatch(/^[a-f0-9]+$/);
-        expect(result.error).toBeUndefined();
-      });
-    });
-
-    it('should reject invalid UpWork job URLs', () => {
-      const invalidUrls = [
-        'https://www.upwork.com/jobs/',
-        'https://www.upwork.com/jobs/123',
-        'https://www.upwork.com/jobs/~invalid',
-        'https://example.com/jobs/~0123456789abcdef',
-        'not-a-url'
-      ];
-
-      invalidUrls.forEach(url => {
-        const result = api.parseJobUrl(url);
-        expect(result.isValid).toBe(false);
-        expect(result.jobId).toBe('');
-        expect(result.error).toBe('Invalid UpWork job URL format');
-      });
-    });
-  });
 
   describe('isAvailable', () => {
     it('should return false when not authenticated', () => {

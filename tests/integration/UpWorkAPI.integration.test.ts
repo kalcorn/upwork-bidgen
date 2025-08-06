@@ -67,24 +67,6 @@ describe('UpWork API Integration Tests', () => {
     }, 30000);
   });
 
-  describe('URL Matching', () => {
-    it('should extract job ID from UpWork URL', () => {
-      const testUrl = 'https://www.upwork.com/jobs/Seeking-Expert-Mobile-App-Developer-for-Fantabase-Next-Gen-Fantasy-Sports-Platform_~021951480577700422082/?referrer_url_path=find_work_home';
-      const result = upworkApi.parseJobUrl(testUrl);
-      
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.jobId).toBe('~021951480577700422082');
-      }
-    });
-
-    it('should handle invalid URLs gracefully', () => {
-      const invalidUrl = 'https://www.upwork.com/invalid-url';
-      const result = upworkApi.parseJobUrl(invalidUrl);
-      
-      expect(result.success).toBe(false);
-    });
-  });
 
   describe('GraphQL Requests', () => {
     it('should make GraphQL requests successfully', async () => {

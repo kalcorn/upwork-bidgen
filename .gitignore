@@ -71,3 +71,13 @@ Thumbs.db
 output/
 
 .claude/
+dist/
+
+# HTTPS Certificates and private keys (SECURITY SENSITIVE)
+certs/
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
