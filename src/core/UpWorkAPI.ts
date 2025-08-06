@@ -1,7 +1,7 @@
 // src/core/UpWorkAPI.ts - UpWork GraphQL API client for job data retrieval
 import axios, { AxiosResponse, AxiosError } from 'axios';
-import inquirer from 'inquirer';
 import { CredentialsManager } from './CredentialsManager';
+import { UpWorkDaemon } from '../services/UpWorkDaemon';
 import {
   UpWorkCredentials,
   GraphQLRequest,
@@ -149,6 +149,10 @@ export class UpWorkAPI {
         this.accessToken = this.credentials.accessToken;
         this.refreshToken = this.credentials.refreshToken || null;
         console.log('✅ Using existing access token from credentials file.');
+        
+        // Ensure daemon is running even with existing token (for API calls that may need OAuth refresh)
+        await this.ensureDaemonRunning();
+        
         return {
           success: true,
           message: 'Authentication successful with stored token'
@@ -174,6 +178,55 @@ export class UpWorkAPI {
         success: false,
         message: 'Authentication failed. Using manual entry mode.'
       };
+    }
+  }
+
+  /**
+   * Ensure daemon is running for OAuth callbacks
+   */
+  private async ensureDaemonRunning(): Promise<void> {
+    // Check if daemon is running
+    const isDaemonRunning = await UpWorkDaemon.isDaemonRunning();
+    if (!isDaemonRunning) {
+      console.log('🔄 Starting UpWork daemon...');
+      
+      try {
+        // Launch daemon as a background process using the same approach as the daemon CLI
+        await new Promise<void>((resolve, reject) => {
+          const { spawn } = require('child_process');
+          const path = require('path');
+          
+          const daemonScript = path.resolve(__dirname, '../cli/daemon.ts');
+          const daemonProcess = spawn(process.execPath, ['-r', 'ts-node/register', daemonScript, '_daemon_process'], {
+            detached: true,
+            stdio: ['ignore', 'ignore', 'ignore']
+          });
+          
+          daemonProcess.unref();
+          
+          daemonProcess.on('error', (error: any) => {
+            console.error('Daemon spawn error:', error.message);
+            reject(error);
+          });
+          
+          // Give daemon time to start
+          setTimeout(() => resolve(), 2000);
+        });
+        
+        // Wait a moment for daemon to be ready
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Verify it actually started
+        const isNowRunning = await UpWorkDaemon.isDaemonRunning();
+        if (isNowRunning) {
+          console.log('✅ Daemon started successfully');
+        } else {
+          console.log('⚠️  Daemon may have failed to start - continuing without daemon');
+        }
+      } catch (error) {
+        console.error('❌ Failed to start daemon:', error instanceof Error ? error.message : 'Unknown error');
+        console.log('⚠️  Continuing without daemon - OAuth may require manual intervention');
+      }
     }
   }
 
@@ -215,7 +268,7 @@ export class UpWorkAPI {
   }
 
   /**
-   * Start OAuth 2.0 authorization flow
+   * Start OAuth 2.0 authorization flow using daemon
    */
   private async startAuthorizationFlow(): Promise<{
     success: boolean;
@@ -223,33 +276,72 @@ export class UpWorkAPI {
     authorizationCode?: string;
   }> {
     try {
-      const authUrl = `https://www.upwork.com/ab/account-security/oauth2/authorize?client_id=${this.credentials!.apiKey}&response_type=code&redirect_uri=${encodeURIComponent(this.config.upwork.oauthRedirectUri)}`;
+      // Ensure daemon is running for OAuth callback
+      await this.ensureDaemonRunning();
 
-      console.log('\n🌐 Please visit this URL in your browser to authorize the application:');
-      console.log(authUrl);
-      console.log('\nAfter authorizing, you will be redirected to a localhost URL.');
+      // Get public callback URL for UpWork API
+      const daemon = new UpWorkDaemon();
+      const callbackUrl = daemon.getPublicCallbackUrl();
+      
+      // Build authorization URL with public callback
+      const authUrl = `https://www.upwork.com/ab/account-security/oauth2/authorize?client_id=${this.credentials!.apiKey}&response_type=code&redirect_uri=${encodeURIComponent(callbackUrl)}`;
 
-      const { redirectUrl } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'redirectUrl',
-          message: 'Paste the full redirect URL here:',
-        }
-      ]);
-
-      const code = new URL(redirectUrl).searchParams.get('code');
-
-      if (!code) {
-        return {
-          success: false,
-          message: 'Could not find authorization code in the URL.'
-        }
+      console.log('\n🌐 Opening browser for UpWork authorization...');
+      console.log(`🔗 Authorization URL: ${authUrl}`);
+      
+      // Try to open browser automatically
+      try {
+        const { default: open } = await import('open');
+        await open(authUrl);
+        console.log('✅ Browser opened automatically');
+      } catch {
+        console.log('⚠️  Could not open browser automatically. Please visit the URL above.');
       }
 
+      console.log('⏳ Waiting for OAuth callback...');
+      
+      // Poll for callback with timeout
+      const maxWaitTime = 300000; // 5 minutes
+      const pollInterval = 2000;   // 2 seconds
+      const startTime = Date.now();
+      
+      while (Date.now() - startTime < maxWaitTime) {
+        const pendingCallbacks = await UpWorkDaemon.getPendingCallbacks();
+        
+        if (pendingCallbacks.length > 0) {
+          // Get the most recent callback
+          const latestCallback = pendingCallbacks.sort((a, b) => b.timestamp - a.timestamp)[0];
+          
+          if (latestCallback) {
+            console.log('✅ OAuth callback received!');
+            
+            // Clean up the callback
+            try {
+              await fetch(`https://home.alcorn.dev:8947/oauth/callback/${latestCallback.id}`, { 
+                method: 'DELETE' 
+              });
+            } catch {
+              // Ignore cleanup errors
+            }
+            
+            return {
+              success: true,
+              message: 'Authorization code received from daemon.',
+              authorizationCode: latestCallback.code
+            };
+          }
+        }
+        
+        // Wait before next poll
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        process.stdout.write('.');
+      }
+      
+      console.log('\n⏰ OAuth callback timeout. Please try again.');
+      
       return {
-        success: true,
-        message: 'Authorization code received.',
-        authorizationCode: code
+        success: false,
+        message: 'OAuth callback timeout. Authorization may have been cancelled or failed.'
       };
 
     } catch (error) {
@@ -269,12 +361,17 @@ export class UpWorkAPI {
   }> {
     try {
       const tokenUrl = 'https://www.upwork.com/api/v3/oauth2/token';
+      
+      // Use public callback URL for consistency with authorization
+      const daemon = new UpWorkDaemon();
+      const callbackUrl = daemon.getPublicCallbackUrl();
+      
       const params = new URLSearchParams({
         grant_type: 'authorization_code',
         code: authorizationCode,
         client_id: this.credentials!.apiKey,
         client_secret: this.credentials!.apiSecret,
-        redirect_uri: this.config.upwork.oauthRedirectUri
+        redirect_uri: callbackUrl
       });
 
       const response = await axios.post(tokenUrl, params, {

@@ -27,6 +27,11 @@
 - **ASSUMPTION TESTING** - validate critical assumptions with isolated experiments
 - **DOCUMENTATION DISCIPLINE** - capture insights and reasoning immediately for future reference
 
+### **Framework Identity & Communication**
+- **VISUAL IDENTITY ADHERENCE** - Consistently use the 🧠 brain emoji when discussing cognitive processes, the AI Cognitive Framework, systematic thinking, or related concepts, as it is part of the framework's visual identity and reinforces its principles.
+- **CLARITY & CONCISENESS** - Balance detailed analysis with clear and concise communication, prioritizing user understanding.
+- **FORMATTING INTEGRITY** - Maintain proper formatting and readability in all outputs, even during complex cognitive processing.
+
 ---
 
 ## **UNIVERSAL ANTI-PATTERNS**
@@ -132,7 +137,10 @@ ANALYSIS REQUEST vs IMPLEMENTATION REQUEST
 
 ## **QUALITY VALIDATION PROTOCOLS**
 
-### **Pre-Implementation Checklist**
+### **Tool Usage Precision**
+- **EXACT MATCH REQUIRED** - All tools requiring precise input (e.g., `replace`, `write_file`, `run_shell_command` for file system modifications) demand exact, byte-for-byte matching for `old_string` parameters, including all whitespace, indentation, and newline characters.
+- **BINARY SEARCH DEBUGGING** - When a tool operation fails on a large input, employ a systematic binary search approach (splitting the input, testing halves, and recursively narrowing down the problematic section) to isolate the precise point of failure.
+
 Before beginning any significant work, verify:
 
 **Requirements Validation:**
@@ -158,6 +166,18 @@ Before beginning any significant work, verify:
 - [ ] Existing functionality preserved unless explicitly requested otherwise
 - [ ] Error handling and edge cases considered
 - [ ] Documentation and reasoning captured for future reference
+
+### **Human Verification Protocols**
+- **CRITICAL OVERSIGHT** - For complex code modifications, especially those involving critical system logic or intricate interactions, human verification protocols are essential.
+- **EXPLICIT REVIEW** - Includes explicit review and approval of proposed changes before implementation.
+- **HUMAN-IN-THE-LOOP VALIDATION** - Potentially involves a human-in-the-loop validation step after changes are applied.
+- **LEVERAGE EXPERTISE** - This transforms a potential AI "limitation" into a robust, systematic practice for ensuring quality and correctness by leveraging human expertise for critical oversight.
+
+### **Human Verification Protocols**
+- **CRITICAL OVERSIGHT** - For complex code modifications, especially those involving critical system logic or intricate interactions, human verification protocols are essential.
+- **EXPLICIT REVIEW** - Includes explicit review and approval of proposed changes before implementation.
+- **HUMAN-IN-THE-LOOP VALIDATION** - Potentially involves a human-in-the-loop validation step after changes are applied.
+- **LEVERAGE EXPERTISE** - This transforms a potential AI "limitation" into a robust, systematic practice for ensuring quality and correctness by leveraging human expertise for critical oversight.
 
 ### **Implementation Quality Standards**
 

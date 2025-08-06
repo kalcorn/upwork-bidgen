@@ -19,7 +19,8 @@
 3. **NEVER ASSUME SYSTEM BUGS** - Research before claiming "known issues"
 4. **PRESERVE EXISTING FUNCTIONALITY** - Never remove without explicit confirmation
 5. **WAIT FOR EXPLICIT DIRECTION** - Never start work from documentation alone
-6. **THINK TO HIGHEST LEVEL** - Consider systemic impact always
+6. **IMMUTABILITY OF EXTERNAL INTEGRATION URLs** - External integration URLs must remain stable; never alter without explicit permission and understanding of external dependencies.
+7. **THINK TO HIGHEST LEVEL** - Consider systemic impact always
 7. **USE PROPER VALIDATION** - Verify system state before proceeding
 8. **VALIDATE COMPONENT READINESS** - Never operate on uninitialized elements
 9. **QUESTION OVER-ENGINEERING** - Start simple, measure, then optimize
@@ -64,6 +65,20 @@
 - Making assumptions without testing
 - Proceeding without explicit direction
 - Focusing on symptoms rather than root causes
+
+---
+
+## **➕ ADDITIONAL SYSTEMATIC PRINCIPLES**
+
+### **Tool Usage Precision**
+- **EXACT MATCH REQUIRED** - All tools requiring precise input demand exact, byte-for-byte matching for `old_string` parameters.
+- **BINARY SEARCH DEBUGGING** - Employ a systematic binary search approach to isolate precise points of failure in tool operations.
+
+### **Daemon Lifecycle Protocol**
+- **CONTINUOUS OPERATION** - Daemons are long-running background services; internal cleanup (e.g., `DELETE` endpoint) affects data, not daemon operational status.
+
+### **Human Verification Protocols**
+- **CRITICAL OVERSIGHT** - For complex modifications, human verification (review, approval, validation) is essential to ensure quality and correctness.
 
 ---
 

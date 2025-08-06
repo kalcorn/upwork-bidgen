@@ -4,6 +4,9 @@
 # Applied jobs tracking (local only)
 .applied-jobs.json
 
+# Daemon status (local only)  
+.daemon-status.json
+
 # Encryption key file
 .encryption-key
 

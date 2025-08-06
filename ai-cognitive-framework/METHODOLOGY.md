@@ -126,6 +126,17 @@ Apply this methodology to any investigation or learning task:
 
 ---
 
+### **Binary Search Debugging Protocol**
+Apply this systematic approach when a tool operation fails on a large input:
+
+1. **Divide and Conquer** → Split the problematic input (e.g., a large code block, a long string) into two roughly equal halves.
+2. **Isolate Failure** → Attempt the operation on the first half. If it fails, the problem is in the first half. If it succeeds, the problem is in the second half.
+3. **Recursive Refinement** → Recursively apply steps 1 and 2 to the problematic half until the specific character, line, or small section causing the failure is isolated.
+4. **Identify Root Cause** → Analyze the isolated problematic section to understand why the tool is failing (e.g., hidden characters, encoding issues, unexpected syntax).
+5. **Correct and Verify** → Apply the necessary fix to the identified root cause and re-verify the operation.
+
+---
+
 ## **REASONING PROTOCOLS**
 
 ### **Assumption Testing Methodology**
@@ -183,6 +194,9 @@ Systematic approaches to breaking out of cognitive limitations:
 ---
 
 ## **SYSTEMATIC THINKING PROTOCOLS**
+
+### **System Interaction Protocols**
+- **DAEMON LIFECYCLE** - The UpWork Daemon is designed to be a long-running, continuous background service (24/7/365) that handles various callbacks (e.g., OAuth, chat messages). Its internal `DELETE` endpoint is solely for cleaning up processed callback *data* and does not affect the daemon's operational status.
 
 ### **Pre-Implementation Validation**
 Before implementing ANY solution, complete this checklist:

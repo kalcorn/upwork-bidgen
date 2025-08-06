@@ -17,7 +17,21 @@
       "Bash(find:*)",
       "Bash(del:*)",
       "Bash(npm run dev:*)",
-      "WebFetch(domain:www.anthropic.com)"
+      "WebFetch(domain:www.anthropic.com)",
+      "Bash(npm run daemon:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(netsh advfirewall firewall show rule:*)",
+      "Bash(netsh:*)",
+      "Bash(certbot certonly:*)",
+      "Bash(where certbot)",
+      "Bash(certbot:*)",
+      "Bash(wacs.exe:*)",
+      "Bash(dir:*)",
+      "Bash(cp:*)",
+      "Bash(tasklist:*)",
+      "Bash(powershell:*)"
     ],
     "deny": []
   }

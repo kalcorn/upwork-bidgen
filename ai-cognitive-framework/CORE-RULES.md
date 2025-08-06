@@ -102,7 +102,21 @@ Never start work based on documentation alone
 - AI confirms understanding before proceeding with any modifications
 ```
 
-### **6. THINK TO HIGHEST LEVEL**
+### **6. IMMUTABILITY OF EXTERNAL INTEGRATION URLs**
+External integration URLs (such as OAuth redirect URIs or API endpoints) are critical configuration points that must remain stable and should *never* be altered without explicit, express permission and a thorough understanding of their external dependencies. Any changes to such URLs must be treated as breaking changes requiring external coordination.
+
+**Example - OAuth Redirect URI:**
+```markdown
+❌ VIOLATION: Changing OAuth redirect URI without coordinating with UpWork API console.
+- Leads to "Invalid redirect_uri" errors and authentication failures.
+
+✅ CORRECT APPROACH:
+- Confirm the exact redirect URI registered in the UpWork API console.
+- If a change is necessary, update the URI in the UpWork API console *first*, then update the local configuration.
+- Treat any change to an external integration URL as a breaking change requiring careful coordination.
+```
+
+### **7. THINK TO HIGHEST LEVEL**
 Always consider systemic impact, not just immediate problem
 
 **Example - Database Optimization:**

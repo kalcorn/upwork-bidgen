@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node dist/cli/index.js",
     "dev": "ts-node src/cli/index.ts",
+    "daemon": "ts-node src/cli/daemon.ts",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "test": "jest",
@@ -54,9 +55,12 @@
   "dependencies": {
     "axios": "^1.11.0",
     "cli-table3": "^0.6.5",
-    "inquirer": "^9.3.7"
+    "express": "^4.18.2",
+    "inquirer": "^9.3.7",
+    "open": "^8.4.2"
   },
   "devDependencies": {
+    "@types/express": "^4.17.20",
     "@types/inquirer": "^9.0.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.10.0",
