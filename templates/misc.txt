@@ -15,8 +15,8 @@ I'm Chris Alcorn, and I've successfully delivered solutions across fintech, heal
 💻 Core Technical Expertise:
 • Frontend: React, Angular, TypeScript, responsive design
 • Backend: Node.js, Python, Java, C#, RESTful APIs, GraphQL
-• Cloud & DevOps: AWS, Azure, Docker, CI/CD, infrastructure as code
-• Databases: PostgreSQL, MongoDB, Redis, performance optimization
+• Cloud & DevOps: AWS, Azure, GCP, Docker, CI/CD, infrastructure as code
+• Databases: PostgreSQL, MySQL, MongoDB, SQL Server, Redis, performance optimization
 
 📆 Availability:
 I'm available immediately (40+ hrs/week) and can start contributing within 24 hours.

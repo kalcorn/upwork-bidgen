@@ -705,13 +705,19 @@ export class UpWorkAPI {
    */
   async getJobDetails(jobId: string): Promise<JobData | null> {
     try {
+      console.log(`🔄 DEBUG API - getJobDetails called with jobId: "${jobId}"`);
+      
       // Authenticate first
+      console.log(`🔄 DEBUG API - Authenticating...`);
       const authResult = await this.authenticate();
       if (!authResult.success) {
+        console.log(`❌ DEBUG API - Authentication failed: ${authResult.message}`);
         throw new Error(`Authentication failed: ${authResult.message}`);
       }
+      console.log(`✅ DEBUG API - Authentication successful`);
 
       if (!jobId) {
+        console.log(`❌ DEBUG API - Job ID is empty or null`);
         throw new Error('Job ID is required');
       }
 
@@ -1015,15 +1021,32 @@ export class UpWorkAPI {
         }
       `;
 
+      console.log(`🔄 DEBUG API - Making GraphQL request...`);
       const response = await this.makeGraphQLRequest<JobDetailsResponse>(query, { jobId });
+      
+      console.log(`🔄 DEBUG API - GraphQL response received:`, response ? 'SUCCESS' : 'NULL');
+      if (response) {
+        console.log(`🔄 DEBUG API - Response has marketplaceJobPosting:`, response.data?.marketplaceJobPosting ? 'YES' : 'NO');
+      }
+      
       if (!response || !response.data?.marketplaceJobPosting) {
+        console.log(`❌ DEBUG API - No job data found for job ID: ${jobId}`);
         throw new Error(`No job data found for job ID: ${jobId}. The job may not exist or you may not have access to it.`);
       }
 
-      return this.formatJobData(response.data.marketplaceJobPosting);
+      console.log(`🔄 DEBUG API - Formatting job data...`);
+      const formattedData = this.formatJobData(response.data.marketplaceJobPosting);
+      console.log(`🔄 DEBUG API - Formatted data has description:`, formattedData.description ? 'YES' : 'NO');
+      if (formattedData.description) {
+        console.log(`🔄 DEBUG API - Description length:`, formattedData.description.length);
+      }
+      
+      return formattedData;
 
     } catch (error) {
-      console.error('Failed to get job details:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('❌ DEBUG API - Exception in getJobDetails:');
+      console.error('   Error type:', error instanceof Error ? 'Error' : typeof error);
+      console.error('   Error message:', error instanceof Error ? error.message : String(error));
       throw error; // Re-throw the error so CLI can see it
     }
   }
@@ -1413,7 +1436,7 @@ export class UpWorkAPI {
         }
       };
 
-      console.log('🔍 Executing job search with variables:', JSON.stringify(variables, null, 2));
+      // console.log('🔍 Executing job search with variables:', JSON.stringify(variables, null, 2));
 
       const response = await this.makeGraphQLRequest<JobSearchResponse>(query, variables);
       if (!response || !response.data?.marketplaceJobPostingsSearch) {
@@ -1421,11 +1444,11 @@ export class UpWorkAPI {
         return null;
       }
 
-      // Debug: Raw API response (disabled for cleaner output)
-      console.log('\n🔍 Raw API Response:');
-      console.log('='.repeat(60));
-      console.log(JSON.stringify(response, null, 2));
-      console.log('='.repeat(60));
+      // Debug: Raw API response (commented out for cleaner output)
+      // console.log('\n🔍 Raw API Response:');
+      // console.log('='.repeat(60));
+      // console.log(JSON.stringify(response, null, 2));
+      // console.log('='.repeat(60));
 
       const searchData = response.data.marketplaceJobPostingsSearch;
 

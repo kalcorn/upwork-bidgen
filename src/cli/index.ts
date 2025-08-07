@@ -2,9 +2,9 @@
 
 import inquirer from 'inquirer';
 import Table from 'cli-table3';
-import { UpWorkAPI } from '../core/UpWorkAPI';
+import { UpWorkAPI, JobData } from '../core/UpWorkAPI';
 import { CredentialsManager } from '../core/CredentialsManager';
-import { AppliedJobsManager } from '../core/AppliedJobsManager';
+import { JobsManager } from '../core/JobsManager';
 import config from '../config';
 
 // Generate UpWork job URL from title and ciphertext only
@@ -31,7 +31,7 @@ async function main() {
 
   // 1. Initialize managers
   const credentialsManager = new CredentialsManager(config.upwork.credentialsFile);
-  const appliedJobsManager = new AppliedJobsManager();
+  const jobsManager = new JobsManager();
 
   // Check for credentials
   if (!credentialsManager.hasCredentials()) {
@@ -70,11 +70,11 @@ async function main() {
   }
   */
 
-  console.log('\n🔍 Searching for relevant jobs on UpWork...');
+  console.log('🔍 Searching for relevant jobs on UpWork...');
   const searchResults = await upworkApi.searchJobs(config.upwork.searchFilters);
 
   if (!searchResults || searchResults.jobs.length === 0) {
-    console.log('\n❌ No jobs found matching your criteria. Try adjusting the filters in `src/config/index.ts`.');
+    console.log('❌ No jobs found matching your criteria. Try adjusting the filters in `src/config/index.ts`.');
     return;
   }
 
@@ -88,7 +88,12 @@ async function main() {
     }
     
     // Filter out jobs already applied to (check both UpWork API and local tracking)
-    if (job.applied || appliedJobsManager.hasApplied(job.id)) {
+    if (job.applied || jobsManager.hasApplied(job.id)) {
+      return false;
+    }
+
+    // Filter out jobs marked as not interested
+    if (jobsManager.isNotInterested(job.id)) {
       return false;
     }
     
@@ -109,7 +114,7 @@ async function main() {
     return dateB - dateA; // Descending order
   });
 
-  console.log(`\n✅ Found ${searchResults.total} jobs. After filtering: ${filteredJobs.length} jobs displayed.`);
+  console.log(`✅ Found ${searchResults.total} jobs. After filtering: ${filteredJobs.length} jobs displayed.`);
 
   if (filteredJobs.length === 0) {
     console.log('\n❌ No jobs remain after filtering. Jobs were filtered out for:');
@@ -272,10 +277,34 @@ async function main() {
     console.log(`🔗 UpWork URL: ${jobUrl}`);
   }
 
+  // DEBUG: Show selected job data
+  console.log('\n🔍 DEBUG - Selected Job Data:');
+  console.log('='.repeat(60));
+  console.log(`   Title: "${selectedJob.title}"`);
+  console.log(`   Description: "${selectedJob.description || 'UNDEFINED/EMPTY'}"`);
+  console.log(`   Description length: ${selectedJob.description ? selectedJob.description.length : 0}`);
+  console.log(`   Experience Level: "${selectedJob.experienceLevel || 'UNDEFINED'}"`);
+  console.log(`   Total Applicants: ${selectedJob.totalApplicants || 'UNDEFINED'}`);
+  console.log(`   Category: "${selectedJob.category || 'UNDEFINED'}"`);
+  console.log(`   Subcategory: "${selectedJob.subcategory || 'UNDEFINED'}"`);
+  console.log(`   Posted: "${selectedJob.publishedDateTime || selectedJob.createdDateTime || 'UNDEFINED'}"`);
+  console.log('='.repeat(60));
+
   // Fetch comprehensive job details
   console.log('\n🔍 Fetching comprehensive job details...');
+  let comprehensiveJobData: JobData | null = null;
   try {
-    const comprehensiveJobData = await upworkApi.getJobDetails(selectedJob.id);
+    console.log(`🔄 DEBUG - Calling getJobDetails with ID: "${selectedJob.id}"`);
+    comprehensiveJobData = await upworkApi.getJobDetails(selectedJob.id);
+    
+    console.log(`🔄 DEBUG - getJobDetails returned:`, comprehensiveJobData ? 'SUCCESS' : 'NULL/FAILED');
+    if (comprehensiveJobData) {
+      console.log(`🔄 DEBUG - Comprehensive data has description: ${comprehensiveJobData.description ? 'YES' : 'NO'}`);
+      if (comprehensiveJobData.description) {
+        console.log(`🔄 DEBUG - Description length: ${comprehensiveJobData.description.length}`);
+        console.log(`🔄 DEBUG - Description preview: "${comprehensiveJobData.description.substring(0, 100)}..."`);
+      }
+    }
     
     if (comprehensiveJobData) {
       console.log('\n' + '='.repeat(80));
@@ -290,9 +319,9 @@ async function main() {
       console.log(`   Can Receive Proposals: ${comprehensiveJobData.canClientReceiveContractProposal ? 'Yes' : 'No'}`);
       
       // Description
-      if (comprehensiveJobData.content?.description) {
+      if (comprehensiveJobData.description) {
         console.log('\n📝 DESCRIPTION:');
-        console.log(`   ${comprehensiveJobData.content.description.substring(0, 500)}${comprehensiveJobData.content.description.length > 500 ? '...' : ''}`);
+        console.log(`   ${comprehensiveJobData.description.substring(0, 500)}${comprehensiveJobData.description.length > 500 ? '...' : ''}`);
       }
 
       // Classification
@@ -616,10 +645,16 @@ async function main() {
       console.log(`✅ Already Applied: ${selectedJob.applied ? 'Yes' : 'No'}`);
     }
   } catch (error) {
-    console.error('❌ Error fetching comprehensive job details:', error instanceof Error ? error.message : 'Unknown error');
-    console.log('⚠️  Falling back to basic information:');
-    console.log(`📝 Description: ${selectedJob.description}...`);
-    console.log(`🎯 Experience Level: ${selectedJob.experienceLevel}`);
+    console.error('❌ ERROR DEBUG - getJobDetails threw an exception:');
+    console.error('   Error type:', error instanceof Error ? 'Error' : typeof error);
+    console.error('   Error message:', error instanceof Error ? error.message : String(error));
+    if (error instanceof Error && error.stack) {
+      console.error('   Stack trace:', error.stack.split('\n').slice(0, 3).join('\n'));
+    }
+    
+    console.log('\n⚠️  Falling back to basic information:');
+    console.log(`📝 Description: "${selectedJob.description || 'UNDEFINED/EMPTY'}"${selectedJob.description ? '...' : ''}`);
+    console.log(`🎯 Experience Level: ${selectedJob.experienceLevel || 'UNDEFINED'}`);
     console.log(`📊 Total Applicants: ${selectedJob.totalApplicants || 'N/A'}`);
     console.log(`📅 Posted: ${selectedJob.publishedDateTime || selectedJob.createdDateTime || 'N/A'}`);
     console.log(`🏢 Category: ${selectedJob.category || 'N/A'} / ${selectedJob.subcategory || 'N/A'}`);
@@ -630,17 +665,25 @@ async function main() {
     console.log(`✅ Already Applied: ${selectedJob.applied ? 'Yes' : 'No'}`);
   }
 
-  // Ask if user wants to mark as applied
-  const { markAsApplied } = await inquirer.prompt([
+  // Ask what action the user wants to take
+  const { action } = await inquirer.prompt([
     {
-      type: 'confirm',
-      name: 'markAsApplied',
-      message: 'Mark this job as applied to?',
-      default: false
+      type: 'list',
+      name: 'action',
+      message: 'What would you like to do with this job?',
+      choices: [
+        { name: '📝 Generate a proposal', value: 'generate' },
+        { name: '❌ Mark as not interested', value: 'not-interested' },
+        { name: '⏭️  Skip for now', value: 'skip' }
+      ],
+      default: 'generate'
     }
   ]);
 
-  if (markAsApplied) {
+  let proposalPath: string | undefined;
+
+  if (action === 'not-interested') {
+    // Handle marking job as not interested
     const { notes } = await inquirer.prompt([
       {
         type: 'input',
@@ -650,19 +693,158 @@ async function main() {
       }
     ]);
 
-    const success = appliedJobsManager.markAsApplied(
-      selectedJob.id,
-      selectedJob.title,
-      undefined, // proposalPath - will be added when proposal generation is implemented
-      notes || undefined
-    );
-
+    const success = jobsManager.markAsNotInterested(selectedJob.id, selectedJob.title, notes || undefined);
+    
     if (success) {
-      console.log('✅ Job marked as applied!');
-      const stats = appliedJobsManager.getStats();
-      console.log(`📊 Total applied jobs: ${stats.total}`);
+      console.log('✅ Job marked as not interested. It will not appear in future searches.');
     } else {
-      console.log('❌ Failed to mark job as applied');
+      console.log('❌ Failed to mark job as not interested.');
+    }
+    
+    // Show updated stats
+    const stats = jobsManager.getStats();
+    console.log('\n📊 TRACKING STATISTICS:');
+    console.log(`   📝 Applied: ${stats.applied}`);
+    console.log(`   💬 Responses: ${stats.responses}`);
+    console.log(`   🎯 Interviews: ${stats.interviews}`);
+    console.log(`   ✅ Hired: ${stats.hired}`);
+    console.log(`   ❌ Rejected: ${stats.rejected}`);
+    console.log(`   🚫 Not Interested: ${stats.notInterested}`);
+    console.log(`   📊 Total Tracked: ${stats.total}`);
+    
+    return;
+  }
+
+  if (action === 'skip') {
+    console.log('⏭️ Skipping this job for now.');
+    return;
+  }
+
+  if (action === 'generate') {
+    console.log('\n🔄 Preparing to generate proposal...');
+    
+    // Import ProposalGenerator
+    const { ProposalGenerator } = await import('../services/ProposalGenerator');
+    const proposalGenerator = new ProposalGenerator();
+    
+    // Get available templates and recommendation
+    const availableTemplates = proposalGenerator.getAvailableTemplates();
+    const recommended = proposalGenerator.getRecommendedTemplate(comprehensiveJobData || selectedJob);
+    
+    if (availableTemplates.length === 0) {
+      console.log('❌ No templates found in ./templates/ directory');
+      return;
+    }
+    
+    // Create choices for template selection
+    const templateChoices = availableTemplates.map(filename => {
+      const displayName = filename === recommended.filename ? 
+        `${proposalGenerator.getTemplateDisplayName(filename)} (Recommended)` :
+        proposalGenerator.getTemplateDisplayName(filename);
+      
+      return {
+        name: displayName,
+        value: filename,
+        short: filename.replace('.txt', '')
+      };
+    });
+    
+    // Find the recommended template in choices to set as default
+    const defaultChoice = templateChoices.find(choice => choice.value === recommended.filename);
+    
+    console.log(`💡 Recommended template: ${recommended.displayName}`);
+    
+    // Prompt for template selection
+    const { selectedTemplate } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'selectedTemplate',
+        message: 'Choose a template for your proposal:',
+        choices: templateChoices,
+        default: defaultChoice?.value || templateChoices[0]?.value,
+        pageSize: 12
+      }
+    ]);
+    
+    console.log(`📝 Using template: ${proposalGenerator.getTemplateDisplayName(selectedTemplate)}`);
+    
+    try {
+      const result = await proposalGenerator.generateProposal(comprehensiveJobData || selectedJob, selectedTemplate);
+      
+      if (result.success) {
+        console.log('✅ Proposal generated successfully!');
+        console.log(`📁 Saved to: ${result.outputPath}`);
+        console.log(`📄 Template used: ${result.templateUsed}`);
+        proposalPath = result.outputPath;
+        
+        // Optionally show a preview of the proposal
+        const { showPreview } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'showPreview',
+            message: 'Would you like to see a preview of the proposal?',
+            default: false
+          }
+        ]);
+        
+        if (showPreview && result.proposalContent) {
+          console.log('\n' + '='.repeat(60));
+          console.log('📄 PROPOSAL PREVIEW');
+          console.log('='.repeat(60));
+          console.log(result.proposalContent.substring(0, 500) + (result.proposalContent.length > 500 ? '...\n\n[Preview truncated - see full proposal in output file]' : ''));
+          console.log('='.repeat(60));
+        }
+        
+      } else {
+        console.log('❌ Failed to generate proposal:', result.error);
+      }
+    } catch (error) {
+      console.log('❌ Error generating proposal:', error instanceof Error ? error.message : 'Unknown error');
+    }
+
+    // Ask if user wants to mark as applied after generating proposal
+    const { markAsApplied } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'markAsApplied',
+        message: 'Mark this job as applied to?',
+        default: false
+      }
+    ]);
+
+    if (markAsApplied) {
+      const { notes } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'notes',
+          message: 'Add notes (optional):',
+          default: ''
+        }
+      ]);
+
+      const success = jobsManager.markAsApplied(
+        selectedJob.id,
+        selectedJob.title,
+        proposalPath, // Now includes the proposal path if generated
+        notes || undefined
+      );
+
+      if (success) {
+        console.log('✅ Job marked as applied!');
+      } else {
+        console.log('❌ Failed to mark job as applied');
+      }
+
+      // Show updated stats
+      const stats = jobsManager.getStats();
+      console.log('\n📊 TRACKING STATISTICS:');
+      console.log(`   📝 Applied: ${stats.applied}`);
+      console.log(`   💬 Responses: ${stats.responses}`);
+      console.log(`   🎯 Interviews: ${stats.interviews}`);
+      console.log(`   ✅ Hired: ${stats.hired}`);
+      console.log(`   ❌ Rejected: ${stats.rejected}`);
+      console.log(`   🚫 Not Interested: ${stats.notInterested}`);
+      console.log(`   📊 Total Tracked: ${stats.total}`);
     }
   }
 
