@@ -5,7 +5,154 @@ import Table from 'cli-table3';
 import { UpWorkAPI, JobData } from '../core/UpWorkAPI';
 import { CredentialsManager } from '../core/CredentialsManager';
 import { JobsManager } from '../core/JobsManager';
+import { InteractiveTable, TableColumn } from '../core/InteractiveTable';
 import config from '../config';
+import colors from 'colors';
+import { countryToAlpha3 } from 'country-to-iso';
+
+// Helper function to format job data for table display
+function createJobTableColumns(): TableColumn[] {
+  const formatDollarAmount = (amountString: string) => {
+    const amount = parseFloat(amountString);
+    if (amount % 1 !== 0) {
+      return amount.toFixed(2);
+    } else {
+      return amount.toFixed(0);
+    }
+  };
+
+  const applyJobStatusStyling = (content: string | { content: string; href?: string }, job: JobData): string | { content: string; href?: string } => {
+    if (job.status === 'applied') {
+      return typeof content === 'object' 
+        ? { ...content, content: colors.green(content.content) }
+        : colors.green(content);
+    } else if (job.status === 'not-interested') {
+      return typeof content === 'object'
+        ? { ...content, content: colors.gray(content.content) }
+        : colors.gray(content);
+    }
+    return content;
+  };
+
+  const formatSpend = (amount: string) => {
+    const num = parseFloat(amount);
+    if (num >= 1000000) return `$${(num/1000000).toFixed(1)}M`;
+    if (num >= 1000) return `$${(num/1000).toFixed(0)}k`;
+    return `$${formatDollarAmount(num.toString())}`;
+  };
+
+  const formatDuration = (duration: string) => {
+    return duration
+      .replace('Less than 1 month', '< 1mo')
+      .replace('1 to 3 months', '1-3 mo')
+      .replace('3 to 6 months', '3-6 mo')
+      .replace('More than 6 months', '6 mo+')
+      .replace(' months', 'mo')
+      .replace(' month', 'mo');
+  };
+
+  const formatClientInfo = (client: any) => {
+    const status = client?.verificationStatus === 'VERIFIED' ? '✓' : 'X';
+    const hires = client?.totalHires || 0;
+    const rating = client?.totalFeedback ? client.totalFeedback.toFixed(1) : '0.0';
+    const spend = client?.totalSpent?.displayValue 
+      ? formatSpend(client.totalSpent.displayValue) 
+      : '$0';
+    
+    return `${status} ${hires}h ${rating}★ ${spend}`;
+  };
+
+  const abbreviateCountry = (country: string) => {
+    if (!country) return 'N/A';
+    const alpha3 = countryToAlpha3(country);
+    return alpha3 || country;
+  };
+
+  return [
+    {
+      header: '#',
+      width: 6,
+      getValue: (job: JobData, index: number) => applyJobStatusStyling((index + 1).toString(), job)
+    },
+    {
+      header: 'Job Title',
+      width: 75,
+      getValue: (job: JobData, _index: number) => {
+        const titleWithPremium = job.premium ? `⚡ ${job.title}` : job.title;
+        const titleContent = job.ciphertext 
+          ? { content: titleWithPremium, href: generateUpWorkJobURL(job.title, job.ciphertext) }
+          : titleWithPremium;
+        return applyJobStatusStyling(titleContent, job);
+      }
+    },
+    {
+      header: 'Budget',
+      width: 16,
+      getValue: (job: JobData) => {
+        let budget: string;
+        if (job.hourlyBudgetMin || job.hourlyBudgetMax) {
+          const minRate = job.hourlyBudgetMin?.displayValue || job.hourlyBudgetMin?.rawValue || '?';
+          const maxRate = job.hourlyBudgetMax?.displayValue || job.hourlyBudgetMax?.rawValue || '?';
+          const formattedMin = minRate !== '?' ? formatDollarAmount(minRate) : '?';
+          const formattedMax = maxRate !== '?' ? formatDollarAmount(maxRate) : '?';
+          budget = `$${formattedMin}-${formattedMax}/hr`;
+        } else if (job.amount && job.amount.rawValue && job.amount.rawValue !== '0.0') {
+          const formattedAmount = formatDollarAmount(job.amount.displayValue || job.amount.rawValue);
+          budget = `$${formattedAmount}`;
+        } else {
+          budget = 'TBD';
+        }
+        return applyJobStatusStyling(budget, job);
+      }
+    },
+    {
+      header: 'Duration',
+      width: 10,
+      getValue: (job: JobData) => applyJobStatusStyling(job.durationLabel ? formatDuration(job.durationLabel) : 'N/A', job)
+    },
+    {
+      header: 'Appl.',
+      width: 9,
+      getValue: (job: JobData) => applyJobStatusStyling(`${job.totalApplicants || 0}`, job)
+    },
+    {
+      header: 'Hired',
+      width: 8,
+      getValue: (job: JobData) => applyJobStatusStyling(job.freelancersToHire ? `0/${job.freelancersToHire}` : '1', job)
+    },
+    {
+      header: 'Client Rep.',
+      width: 22,
+      getValue: (job: JobData) => applyJobStatusStyling(formatClientInfo(job.client), job)
+    },
+    {
+      header: 'Location',
+      width: 15,
+      getValue: (job: JobData) => applyJobStatusStyling(abbreviateCountry(job.client?.location?.country || ''), job)
+    },
+    {
+      header: 'Pref. Loc.',
+      width: 15,
+      getValue: (job: JobData) => {
+        const prefLoc = job.preferredFreelancerLocation && job.preferredFreelancerLocation.length > 0 
+          ? job.preferredFreelancerLocation.map(abbreviateCountry).join(', ') 
+          : 'Any';
+        return applyJobStatusStyling(prefLoc, job);
+      }
+    },
+    {
+      header: 'Posted',
+      width: 19,
+      getValue: (job: JobData) => {
+        const postedDate = job.publishedDateTime 
+          ? new Date(job.publishedDateTime).toLocaleString('en-US',
+              { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '') 
+          : 'N/A';
+        return applyJobStatusStyling(postedDate, job);
+      }
+    }
+  ];
+}
 
 // Generate UpWork job URL from title and ciphertext only
 function generateUpWorkJobURL(title: string, ciphertext: string): string {
@@ -78,22 +225,18 @@ async function main() {
     return;
   }
 
+  // Store pagination info for later use
+  const initialPaginationInfo = {
+    nextCursor: searchResults.nextOffset,
+    hasMore: searchResults.hasMore
+  };
+
   // Filter and sort jobs
   let filteredJobs = searchResults.jobs.filter(job => {
     // Filter out jobs where location is mandatory and "United States" is not included
     if (job.preferredFreelancerLocationMandatory && 
         job.preferredFreelancerLocation && 
         !job.preferredFreelancerLocation.includes("United States")) {
-      return false;
-    }
-    
-    // Filter out jobs already applied to (check both UpWork API and local tracking)
-    if (job.applied || jobsManager.hasApplied(job.id)) {
-      return false;
-    }
-
-    // Filter out jobs marked as not interested
-    if (jobsManager.isNotInterested(job.id)) {
       return false;
     }
     
@@ -107,12 +250,23 @@ async function main() {
     return true;
   });
 
-  // Sort by posted date descending (most recent first)
-  filteredJobs = filteredJobs.sort((a, b) => {
-    const dateA = new Date(a.publishedDateTime || a.createdDateTime || 0).getTime();
-    const dateB = new Date(b.publishedDateTime || b.createdDateTime || 0).getTime();
-    return dateB - dateA; // Descending order
+  // Integrate job statuses
+  filteredJobs.forEach(job => {
+    const trackedJob = jobsManager.getTrackedJob(job.id);
+    if (trackedJob) {
+      job.status = trackedJob.status;
+    }
   });
+
+  // Sort by published date descending (most recent first) - prioritize publishedDateTime consistently
+  filteredJobs = filteredJobs.sort((a, b) => {
+    // Always prioritize publishedDateTime when available for both jobs
+    const dateA = a.publishedDateTime ? new Date(a.publishedDateTime).getTime() : new Date(a.createdDateTime || 0).getTime();
+    const dateB = b.publishedDateTime ? new Date(b.publishedDateTime).getTime() : new Date(b.createdDateTime || 0).getTime();
+    
+    return dateB - dateA; // Descending order (most recent first)
+  });
+  
 
   console.log(`✅ Found ${searchResults.total} jobs. After filtering: ${filteredJobs.length} jobs displayed.`);
 
@@ -236,36 +390,168 @@ async function main() {
     ]);
   });
 
-  console.log('\n' + table.toString());
+  // 4. Job browsing with visual table-based navigation
+  await startTableBasedJobBrowsing(filteredJobs, jobsManager, upworkApi, initialPaginationInfo);
+}
 
-  // 4. Prompt for job number selection
-  const { jobNumber } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'jobNumber',
-      message: 'Enter job number to generate proposal for:',
-      validate: (input) => {
-        const num = parseInt(input, 10);
-        if (isNaN(num) || num < 1 || num > filteredJobs.length) {
-          return `Please enter a valid number between 1 and ${filteredJobs.length}`;
-        }
-        return true;
-      },
-      filter: (input) => {
-        return parseInt(input, 10);
-      }
-    },
-  ]);
 
-  const selectedJobId = filteredJobs[jobNumber - 1]?.id;
-
-  // Find the full job data for the selected job
-  const selectedJob = filteredJobs.find(job => job.id === selectedJobId);
-  if (!selectedJob) {
-    console.error('❌ An error occurred while selecting the job.');
+// Main job browsing using InteractiveTable class
+async function startTableBasedJobBrowsing(
+  jobs: JobData[], 
+  jobsManager: any, 
+  upworkApi: any, 
+  paginationInfo?: { nextCursor: string | null, hasMore: boolean }
+): Promise<void> {
+  if (jobs.length === 0) {
+    console.log('\n❌ No jobs available.');
     return;
   }
+  
+  let nextCursor: string | null = paginationInfo?.nextCursor || null;
+  let hasMoreApiData = paginationInfo?.hasMore ?? true;
+  
+  // Track job IDs to prevent duplicates
+  const jobIds = new Set<string>(jobs.map(job => job.id));
+  
+  // Create the interactive table with job-specific configuration
+  const interactiveTable = new InteractiveTable<JobData>({
+    title: '🤖 Welcome to the UpWork Bid Generator',
+    columns: createJobTableColumns(),
+    pageSize: 15,
+    onSelect: async (job: JobData, _index: number) => {
+      interactiveTable.suspend();
+      await processSelectedJob(job, jobsManager, upworkApi);
+      interactiveTable.resume();
+    },
+    onQuit: () => {
+      console.log('\nThank you for using the UpWork Bid Generator!');
+    },
+    onLoadMore: async (): Promise<boolean> => {
+      return await loadMoreJobs(upworkApi, jobsManager, interactiveTable, nextCursor, hasMoreApiData, jobIds, (cursor, hasMore) => {
+        nextCursor = cursor;
+        hasMoreApiData = hasMore;
+      });
+    },
+    onKeyPress: async (key: string, job: JobData) => {
+      if (key === 'n') {
+        if (job.status === 'not-interested') {
+          // Undo not-interested - remove from tracking
+          jobsManager.removeTrackedJob(job.id);
+          delete job.status;
+        } else {
+          // Mark as not-interested
+          jobsManager.markAsNotInterested(job.id, job.title);
+          job.status = 'not-interested';
+        }
+      }
+    },
+    getDynamicControls: (job: JobData) => {
+      return job.status === 'not-interested' ? 'I[n]terested' : '[N]ot Interested';
+    }
+  });
+  
+  // Set the initial jobs data
+  interactiveTable.setData(jobs);
+  
+  // Start the interactive table
+  await interactiveTable.start();
+}
 
+// Load more jobs function
+async function loadMoreJobs(
+  upworkApi: any, 
+  jobsManager: any, 
+  interactiveTable: any,
+  currentCursor: string | null,
+  hasMoreApiData: boolean,
+  jobIds: Set<string>,
+  updatePaginationState: (cursor: string | null, hasMore: boolean) => void
+): Promise<boolean> {
+  try {
+    if (!hasMoreApiData) {
+      return false;
+    }
+    
+    // Create pagination parameters for next batch
+    const searchFilters = {
+      ...config.upwork.searchFilters,
+      marketPlaceJobFilter: {
+        ...config.upwork.searchFilters.marketPlaceJobFilter,
+        pagination_eq: {
+          after: currentCursor || "0",
+          first: 50
+        }
+      }
+    };
+
+    const searchResults = await upworkApi.searchJobs(searchFilters);
+    
+    if (!searchResults || searchResults.jobs.length === 0) {
+      updatePaginationState(null, false);
+      return false;
+    }
+
+    // Filter new jobs same as initial filtering
+    let newFilteredJobs = searchResults.jobs.filter((job: JobData) => {
+      // Filter out jobs where location is mandatory and "United States" is not included
+      if (job.preferredFreelancerLocationMandatory && 
+          job.preferredFreelancerLocation && 
+          !job.preferredFreelancerLocation.includes("United States")) {
+        return false;
+      }
+      
+      // Filter out jobs already applied to (check both UpWork API and local tracking)
+      if (job.applied || jobsManager.hasApplied(job.id)) {
+        return false;
+      }
+
+      // Filter out jobs marked as not interested
+      if (jobsManager.isNotInterested(job.id)) {
+        return false;
+      }
+      
+      // Filter out jobs with 0 hires and unverified payment method
+      if (job.client && 
+          (job.client.totalHires === 0 || !job.client.totalHires) && 
+          job.client.verificationStatus !== 'VERIFIED') {
+        return false;
+      }
+      
+      return true;
+    });
+
+    // Sort this batch by posted date descending (most recent first)
+    newFilteredJobs = newFilteredJobs.sort((a: JobData, b: JobData) => {
+      const dateA = a.publishedDateTime ? new Date(a.publishedDateTime).getTime() : new Date(a.createdDateTime || 0).getTime();
+      const dateB = b.publishedDateTime ? new Date(b.publishedDateTime).getTime() : new Date(b.createdDateTime || 0).getTime();
+      return dateB - dateA; // Descending order
+    });
+
+    // Filter out duplicates using job ID set
+    const uniqueNewJobs = newFilteredJobs.filter((job: JobData) => {
+      if (jobIds.has(job.id)) {
+        return false; // Skip duplicate
+      }
+      jobIds.add(job.id); // Add to set for future deduplication
+      return true;
+    });
+
+    if (uniqueNewJobs.length > 0) {
+      interactiveTable.addData(uniqueNewJobs);
+    }
+
+    updatePaginationState(searchResults.nextOffset, searchResults.hasMore);
+    
+    return uniqueNewJobs.length > 0;
+    
+  } catch (error) {
+    console.error('❌ Error loading more jobs:', error instanceof Error ? error.message : 'Unknown error');
+    return false;
+  }
+}
+
+// Process a single selected job
+async function processSelectedJob(selectedJob: JobData, jobsManager: any, upworkApi: any): Promise<void> {
   console.log(`\n👍 You selected: ${selectedJob.title}`);
   console.log(`📋 Job ID: ${selectedJob.id}`);
   console.log(`🔐 CypherText: ${selectedJob.ciphertext || 'N/A'}`);
@@ -277,413 +563,194 @@ async function main() {
     console.log(`🔗 UpWork URL: ${jobUrl}`);
   }
 
-  // DEBUG: Show selected job data
-  console.log('\n🔍 DEBUG - Selected Job Data:');
-  console.log('='.repeat(60));
-  console.log(`   Title: "${selectedJob.title}"`);
-  console.log(`   Description: "${selectedJob.description || 'UNDEFINED/EMPTY'}"`);
-  console.log(`   Description length: ${selectedJob.description ? selectedJob.description.length : 0}`);
-  console.log(`   Experience Level: "${selectedJob.experienceLevel || 'UNDEFINED'}"`);
-  console.log(`   Total Applicants: ${selectedJob.totalApplicants || 'UNDEFINED'}`);
-  console.log(`   Category: "${selectedJob.category || 'UNDEFINED'}"`);
-  console.log(`   Subcategory: "${selectedJob.subcategory || 'UNDEFINED'}"`);
-  console.log(`   Posted: "${selectedJob.publishedDateTime || selectedJob.createdDateTime || 'UNDEFINED'}"`);
-  console.log('='.repeat(60));
 
   // Fetch comprehensive job details
-  console.log('\n🔍 Fetching comprehensive job details...');
   let comprehensiveJobData: JobData | null = null;
   try {
-    console.log(`🔄 DEBUG - Calling getJobDetails with ID: "${selectedJob.id}"`);
     comprehensiveJobData = await upworkApi.getJobDetails(selectedJob.id);
-    
-    console.log(`🔄 DEBUG - getJobDetails returned:`, comprehensiveJobData ? 'SUCCESS' : 'NULL/FAILED');
-    if (comprehensiveJobData) {
-      console.log(`🔄 DEBUG - Comprehensive data has description: ${comprehensiveJobData.description ? 'YES' : 'NO'}`);
-      if (comprehensiveJobData.description) {
-        console.log(`🔄 DEBUG - Description length: ${comprehensiveJobData.description.length}`);
-        console.log(`🔄 DEBUG - Description preview: "${comprehensiveJobData.description.substring(0, 100)}..."`);
-      }
-    }
-    
-    if (comprehensiveJobData) {
-      console.log('\n' + '='.repeat(80));
-      console.log('📋 COMPREHENSIVE JOB DETAILS');
-      console.log('='.repeat(80));
-      
-      // Basic Information
-      console.log('\n🏷️  BASIC INFORMATION:');
-      console.log(`   Title: ${comprehensiveJobData.content?.title || selectedJob.title}`);
-      console.log(`   ID: ${comprehensiveJobData.id || selectedJob.id}`);
-      console.log(`   Workflow State: ${comprehensiveJobData.workFlowState || 'N/A'}`);
-      console.log(`   Can Receive Proposals: ${comprehensiveJobData.canClientReceiveContractProposal ? 'Yes' : 'No'}`);
-      
-      // Description
-      if (comprehensiveJobData.description) {
-        console.log('\n📝 DESCRIPTION:');
-        console.log(`   ${comprehensiveJobData.description.substring(0, 500)}${comprehensiveJobData.description.length > 500 ? '...' : ''}`);
-      }
-
-      // Classification
-      if (comprehensiveJobData.classification) {
-        console.log('\n🏷️  CLASSIFICATION:');
-        if (comprehensiveJobData.classification.category) {
-          const cat = comprehensiveJobData.classification.category as any;
-          console.log(`   Category: ${cat.preferredLabel || cat.id}`);
-          if (cat.ontologyId) console.log(`     Ontology ID: ${cat.ontologyId}`);
-          if (cat.definition) console.log(`     Definition: ${cat.definition}`);
-          if (cat.type) console.log(`     Type: ${cat.type}`);
-          if (cat.entityStatus) console.log(`     Status: ${cat.entityStatus}`);
-          if (cat.createdDateTime) console.log(`     Created: ${cat.createdDateTime}`);
-        }
-        if (comprehensiveJobData.classification.subCategory) {
-          const subCat = comprehensiveJobData.classification.subCategory as any;
-          console.log(`   Subcategory: ${subCat.preferredLabel || subCat.id}`);
-          if (subCat.ontologyId) console.log(`     Ontology ID: ${subCat.ontologyId}`);
-          if (subCat.definition) console.log(`     Definition: ${subCat.definition}`);
-          if (subCat.type) console.log(`     Type: ${subCat.type}`);
-          if (subCat.entityStatus) console.log(`     Status: ${subCat.entityStatus}`);
-          if (subCat.createdDateTime) console.log(`     Created: ${subCat.createdDateTime}`);
-        }
-        if (comprehensiveJobData.classification.occupation) {
-          const occ = comprehensiveJobData.classification.occupation as any;
-          console.log(`   Occupation: ${occ.preferredLabel || occ.id}`);
-          if (occ.ontologyId) console.log(`     Ontology ID: ${occ.ontologyId}`);
-          if (occ.definition) console.log(`     Definition: ${occ.definition}`);
-          if (occ.type) console.log(`     Type: ${occ.type}`);
-          if (occ.entityStatus) console.log(`     Status: ${occ.entityStatus}`);
-        }
-        if (comprehensiveJobData.classification.skills && comprehensiveJobData.classification.skills.length > 0) {
-          console.log(`   Skills:`);
-          comprehensiveJobData.classification.skills.forEach(skill => {
-            const s = skill as any;
-            console.log(`     • ${s.preferredLabel || s.id}`);
-            if (s.ontologyId) console.log(`       Ontology ID: ${s.ontologyId}`);
-            if (s.definition) console.log(`       Definition: ${s.definition.substring(0, 100)}${s.definition.length > 100 ? '...' : ''}`);
-            if (s.broader) console.log(`       Broader: ${s.broader}`);
-            if (s.narrower) console.log(`       Narrower: ${s.narrower}`);
-            if (s.legacySkillNid) console.log(`       Legacy: ${s.legacySkillNid}`);
-            if (s.entityStatus) console.log(`       Status: ${s.entityStatus}`);
-          });
-        }
-        if (comprehensiveJobData.classification.additionalSkills && comprehensiveJobData.classification.additionalSkills.length > 0) {
-          console.log(`   Additional Skills:`);
-          comprehensiveJobData.classification.additionalSkills.forEach(skill => {
-            const s = skill as any;
-            console.log(`     • ${s.preferredLabel || s.id}`);
-            if (s.ontologyId) console.log(`       Ontology ID: ${s.ontologyId}`);
-            if (s.definition) console.log(`       Definition: ${s.definition.substring(0, 100)}${s.definition.length > 100 ? '...' : ''}`);
-            if (s.broader) console.log(`       Broader: ${s.broader}`);
-            if (s.narrower) console.log(`       Narrower: ${s.narrower}`);
-            if (s.legacySkillNid) console.log(`       Legacy: ${s.legacySkillNid}`);
-            if (s.entityStatus) console.log(`       Status: ${s.entityStatus}`);
-          });
-        }
-      }
-
-      // Contract Terms
-      if (comprehensiveJobData.contractTerms) {
-        console.log('\n💼 CONTRACT TERMS:');
-        console.log(`   Contract Type: ${comprehensiveJobData.contractTerms.contractType || 'N/A'}`);
-        console.log(`   Experience Level: ${comprehensiveJobData.contractTerms.experienceLevel || 'N/A'}${comprehensiveJobData.contractTerms.notSureExperiencelevel ? ' (Client unsure)' : ''}`);
-        console.log(`   Persons to Hire: ${comprehensiveJobData.contractTerms.personsToHire || 'N/A'}${comprehensiveJobData.contractTerms.notSurePersonsToHire ? ' (Client unsure)' : ''}`);
-        console.log(`   On-Site Type: ${comprehensiveJobData.contractTerms.onSiteType || 'N/A'}`);
-        
-        if (comprehensiveJobData.contractTerms.contractStartDate) {
-          console.log(`   Start Date: ${comprehensiveJobData.contractTerms.contractStartDate}`);
-        }
-        if (comprehensiveJobData.contractTerms.contractEndDate) {
-          console.log(`   End Date: ${comprehensiveJobData.contractTerms.contractEndDate}`);
-        }
-
-        // Fixed Price Contract Terms
-        if (comprehensiveJobData.contractTerms.fixedPriceContractTerms) {
-          const fixed = comprehensiveJobData.contractTerms.fixedPriceContractTerms;
-          console.log('\n💰 FIXED PRICE TERMS:');
-          if (fixed.amount) {
-            console.log(`   Amount: ${fixed.amount.displayValue || fixed.amount.rawValue} ${fixed.amount.currency || ''}`);
-          }
-          if (fixed.maxAmount) {
-            console.log(`   Max Amount: ${fixed.maxAmount.displayValue || fixed.maxAmount.rawValue} ${fixed.maxAmount.currency || ''}`);
-          }
-          if (fixed.engagementDuration) {
-            console.log(`   Duration: ${fixed.engagementDuration.label} (${fixed.engagementDuration.weeks} weeks)`);
-          }
-        }
-
-        // Hourly Contract Terms
-        if (comprehensiveJobData.contractTerms.hourlyContractTerms) {
-          const hourly = comprehensiveJobData.contractTerms.hourlyContractTerms;
-          console.log('\n⏰ HOURLY TERMS:');
-          if (hourly.hourlyBudgetMin || hourly.hourlyBudgetMax) {
-            console.log(`   Hourly Rate: $${hourly.hourlyBudgetMin || 'N/A'} - $${hourly.hourlyBudgetMax || 'N/A'}`);
-          }
-          console.log(`   Budget Type: ${hourly.hourlyBudgetType || 'N/A'}`);
-          console.log(`   Engagement Type: ${hourly.engagementType || 'N/A'}`);
-          if (hourly.engagementDuration) {
-            console.log(`   Duration: ${hourly.engagementDuration.label} (${hourly.engagementDuration.weeks} weeks)${hourly.notSureProjectDuration ? ' (Client unsure)' : ''}`);
-          } else if (hourly.notSureProjectDuration) {
-            console.log(`   Duration: Not specified (Client unsure)`);
-          }
-        }
-      }
-
-      // Proposal Requirements
-      if (comprehensiveJobData.contractorSelection?.proposalRequirement) {
-        const req = comprehensiveJobData.contractorSelection.proposalRequirement;
-        console.log('\n📋 PROPOSAL REQUIREMENTS:');
-        console.log(`   Cover Letter Required: ${req.coverLetterRequired ? 'Yes' : 'No'}`);
-        console.log(`   Milestones Allowed: ${req.freelancerMilestonesAllowed ? 'Yes' : 'No'}`);
-        
-        if (req.screeningQuestions && req.screeningQuestions.length > 0) {
-          console.log('\n❓ SCREENING QUESTIONS:');
-          req.screeningQuestions.forEach((q: any, index: number) => {
-            console.log(`   ${index + 1}. ${q.question}${q.required ? ' (Required)' : ''}`);
-            if (q.id) console.log(`     ID: ${q.id}`);
-            if (q.options && q.options.length > 0) {
-              console.log(`     Options:`);
-              q.options.forEach((option: any) => {
-                console.log(`       - ${option.option}${option.id ? ` (ID: ${option.id})` : ''}`);
-              });
-            }
-          });
-        }
-        
-        // Additional contractor selection info
-        if (comprehensiveJobData.contractorSelection?.qualification) {
-          const qual = comprehensiveJobData.contractorSelection.qualification;
-          console.log('\n✅ QUALIFICATION REQUIREMENTS:');
-          console.log(`   Contractor Type: ${qual.contractorType || 'N/A'}`);
-          console.log(`   English Proficiency: ${qual.englishProficiency || 'N/A'}`);
-          console.log(`   Has Portfolio: ${qual.hasPortfolio ? 'Yes' : 'No'}`);
-          console.log(`   Hours Worked: ${qual.hoursWorked || 'N/A'}`);
-          console.log(`   Rising Talent: ${qual.risingTalent ? 'Yes' : 'No'}`);
-          console.log(`   Job Success Score: ${qual.jobSuccessScore || 'N/A'}`);
-          if (qual.minEarning) {
-            console.log(`   Min Earning: ${qual.minEarning.displayValue || qual.minEarning.rawValue} ${qual.minEarning.currency || ''}`);
-          }
-          if (qual.preferredGroups) {
-            console.log(`   Preferred Groups: ${qual.preferredGroups}`);
-          }
-          if (qual.preferenceTests) {
-            console.log(`   Preference Tests: ${qual.preferenceTests}`);
-          }
-        }
-        
-        if (comprehensiveJobData.contractorSelection?.location) {
-          const loc = comprehensiveJobData.contractorSelection.location;
-          console.log('\n📍 LOCATION REQUIREMENTS:');
-          if (loc.countries) console.log(`   Countries: ${loc.countries}`);
-          if (loc.states) console.log(`   States: ${loc.states}`);
-          if (loc.timezones) console.log(`   Timezones: ${loc.timezones}`);
-          console.log(`   Local Check Required: ${loc.localCheckRequired ? 'Yes' : 'No'}`);
-          console.log(`   Local Market: ${loc.localMarket ? 'Yes' : 'No'}`);
-          if (loc.areas && loc.areas.length > 0) {
-            console.log(`   Areas:`);
-            loc.areas.forEach((area: any) => {
-              console.log(`     • ${area.name || area.id}`);
-            });
-          }
-          console.log(`   Not Sure Location Preference: ${loc.notSureLocationPreference ? 'Yes' : 'No'}`);
-          if (loc.localDescription) console.log(`   Local Description: ${loc.localDescription}`);
-          if (loc.localFlexibilityDescription) console.log(`   Local Flexibility: ${loc.localFlexibilityDescription}`);
-        }
-      }
-
-      // Company Information
-      if (comprehensiveJobData.clientCompanyPublic) {
-        const company = comprehensiveJobData.clientCompanyPublic;
-        console.log('\n🏢 CLIENT COMPANY:');
-        console.log(`   ID: ${company.id || 'N/A'}`);
-        console.log(`   Legacy Type: ${company.legacyType || 'N/A'}`);
-        console.log(`   Can Hire: ${company.canHire ? 'Yes' : 'No'}`);
-        console.log(`   Teams Enabled: ${company.teamsEnabled ? 'Yes' : 'No'}`);
-        console.log(`   Hidden Profile: ${company.hidden ? 'Yes' : 'No'}`);
-        console.log(`   Billing Type: ${company.billingType || 'N/A'}`);
-        if (company.accountingEntity) {
-          console.log(`   Accounting Entity: ${company.accountingEntity}`);
-        }
-        
-        if (company.country || company.city || company.state) {
-          let location = '';
-          if (company.city) location += company.city;
-          if (company.state) location += (location ? ', ' : '') + company.state;
-          if (company.country) {
-            const countryName = company.country.name || 'N/A';
-            location += (location ? ', ' : '') + countryName;
-          }
-          console.log(`   Location: ${location || 'N/A'}`);
-        }
-        if (company.timezone) {
-          console.log(`   Timezone: ${company.timezone}`);
-        }
-        if (company.agencyDetails) {
-          console.log(`   Agency Details ID: ${company.agencyDetails.id || 'N/A'}`);
-        }
-      }
-
-      // Ownership
-      if (comprehensiveJobData.ownership) {
-        console.log('\n🏛️  OWNERSHIP:');
-        if (comprehensiveJobData.ownership.company) {
-          console.log(`   Company: ${comprehensiveJobData.ownership.company.name || comprehensiveJobData.ownership.company.id}`);
-          if (comprehensiveJobData.ownership.company.description) {
-            console.log(`     Description: ${comprehensiveJobData.ownership.company.description}`);
-          }
-        }
-        if (comprehensiveJobData.ownership.team) {
-          console.log(`   Team: ${comprehensiveJobData.ownership.team.name || comprehensiveJobData.ownership.team.id}`);
-          if (comprehensiveJobData.ownership.team.description) {
-            console.log(`     Description: ${comprehensiveJobData.ownership.team.description}`);
-          }
-        }
-      }
-
-      // Activity Statistics
-      if (comprehensiveJobData.activityStat) {
-        console.log('\n📊 ACTIVITY STATISTICS:');
-        
-        // Job Activity
-        if (comprehensiveJobData.activityStat.jobActivity) {
-          const activity = comprehensiveJobData.activityStat.jobActivity;
-          console.log('   Job Activity:');
-          if (activity.lastClientActivity) console.log(`     Last Client Activity: ${activity.lastClientActivity}`);
-          if (activity.invitesSent) console.log(`     Invites Sent: ${activity.invitesSent}`);
-          if (activity.totalInvitedToInterview) console.log(`     Invited to Interview: ${activity.totalInvitedToInterview}`);
-          if (activity.totalHired) console.log(`     Total Hired: ${activity.totalHired}`);
-          if (activity.totalOffered) console.log(`     Total Offered: ${activity.totalOffered}`);
-          if (activity.totalRecommended) console.log(`     Total Recommended: ${activity.totalRecommended}`);
-          if (activity.totalUnansweredInvites) console.log(`     Unanswered Invites: ${activity.totalUnansweredInvites}`);
-        }
-
-        // Bid Statistics
-        if (comprehensiveJobData.activityStat.applicationsBidStats) {
-          const bidStats = comprehensiveJobData.activityStat.applicationsBidStats;
-          console.log('   Bid Statistics:');
-          if (bidStats.avgRateBid) {
-            console.log(`     Average Rate: ${bidStats.avgRateBid.displayValue || bidStats.avgRateBid.rawValue} ${bidStats.avgRateBid.currency || ''}`);
-          }
-          if (bidStats.minRateBid) {
-            console.log(`     Min Rate: ${bidStats.minRateBid.displayValue || bidStats.minRateBid.rawValue} ${bidStats.minRateBid.currency || ''}`);
-          }
-          if (bidStats.maxRateBid) {
-            console.log(`     Max Rate: ${bidStats.maxRateBid.displayValue || bidStats.maxRateBid.rawValue} ${bidStats.maxRateBid.currency || ''}`);
-          }
-          if (bidStats.avgInterviewedRateBid) {
-            console.log(`     Avg Interviewed Rate: ${bidStats.avgInterviewedRateBid.displayValue || bidStats.avgInterviewedRateBid.rawValue} ${bidStats.avgInterviewedRateBid.currency || ''}`);
-          }
-        }
-      }
-
-      // Tags and Custom Fields
-      if (comprehensiveJobData.annotations?.tags && comprehensiveJobData.annotations.tags.length > 0) {
-        console.log('\n🏷️  TAGS:');
-        console.log(`   ${comprehensiveJobData.annotations.tags.join(', ')}`);
-      }
-      
-      if (comprehensiveJobData.annotations?.customFields && comprehensiveJobData.annotations.customFields.length > 0) {
-        console.log('\n🔧 CUSTOM FIELDS:');
-        comprehensiveJobData.annotations.customFields.forEach(field => {
-          console.log(`   ${field.key}: ${field.value}`);
-        });
-      }
-
-      // Additional Data Sections
-      if (comprehensiveJobData.attachments && comprehensiveJobData.attachments.length > 0) {
-        console.log('\n📎 ATTACHMENTS:');
-        comprehensiveJobData.attachments.forEach(attachment => {
-          console.log(`   ID: ${attachment.id}`);
-        });
-      }
-
-      if (comprehensiveJobData.segmentationData && comprehensiveJobData.segmentationData.length > 0) {
-        console.log('\n📊 SEGMENTATION DATA:');
-        comprehensiveJobData.segmentationData.forEach((data: any) => {
-          console.log(`   ID: ${data.id}`);
-        });
-      }
-
-      if (comprehensiveJobData.additionalSearchInfo && comprehensiveJobData.additionalSearchInfo.length > 0) {
-        console.log('\n🔍 ADDITIONAL SEARCH INFO:');
-        comprehensiveJobData.additionalSearchInfo.forEach((info: any) => {
-          console.log(`   ID: ${info.id}`);
-        });
-      }
-
-      if (comprehensiveJobData.clientProposals?.edges && comprehensiveJobData.clientProposals.edges.length > 0) {
-        console.log('\n💼 CLIENT PROPOSALS:');
-        console.log(`   Found ${comprehensiveJobData.clientProposals.edges.length} proposal(s)`);
-        console.log(`   Has More: ${comprehensiveJobData.clientProposals.pageInfo?.hasNextPage ? 'Yes' : 'No'}`);
-        if (comprehensiveJobData.clientProposals.pageInfo?.endCursor) {
-          console.log(`   End Cursor: ${comprehensiveJobData.clientProposals.pageInfo.endCursor}`);
-        }
-      }
-
-      if (comprehensiveJobData.customFields?.edges && comprehensiveJobData.customFields.edges.length > 0) {
-        console.log('\n⚙️  CUSTOM FIELDS (Paginated):');
-        console.log(`   Found ${comprehensiveJobData.customFields.edges.length} field(s)`);
-        console.log(`   Has More: ${comprehensiveJobData.customFields.pageInfo?.hasNextPage ? 'Yes' : 'No'}`);
-        if (comprehensiveJobData.customFields.pageInfo?.endCursor) {
-          console.log(`   End Cursor: ${comprehensiveJobData.customFields.pageInfo.endCursor}`);
-        }
-      }
-
-      console.log('\n' + '='.repeat(80));
-      console.log('✅ COMPREHENSIVE JOB DETAILS COMPLETE - ALL AVAILABLE DATA DISPLAYED');
-      console.log('='.repeat(80));
-    } else {
-      console.log('⚠️  Could not fetch comprehensive job details, showing basic information:');
-      console.log(`📝 Description: ${selectedJob.description}...`);
-      console.log(`🎯 Experience Level: ${selectedJob.experienceLevel}`);
-      console.log(`📊 Total Applicants: ${selectedJob.totalApplicants || 'N/A'}`);
-      console.log(`📅 Posted: ${selectedJob.publishedDateTime || selectedJob.createdDateTime || 'N/A'}`);
-      console.log(`🏢 Category: ${selectedJob.category || 'N/A'} / ${selectedJob.subcategory || 'N/A'}`);
-      console.log(`⭐ Premium: ${selectedJob.premium ? 'Yes' : 'No'}`);
-      console.log(`🏢 Enterprise: ${selectedJob.enterprise ? 'Yes' : 'No'}`);
-      console.log(`💼 Budget Type: ${selectedJob.hourlyBudgetType || 'N/A'}`);
-      console.log(`👥 Freelancers to Hire: ${selectedJob.freelancersToHire || selectedJob.totalFreelancersToHire || 'N/A'}`);
-      console.log(`✅ Already Applied: ${selectedJob.applied ? 'Yes' : 'No'}`);
-    }
   } catch (error) {
-    console.error('❌ ERROR DEBUG - getJobDetails threw an exception:');
-    console.error('   Error type:', error instanceof Error ? 'Error' : typeof error);
-    console.error('   Error message:', error instanceof Error ? error.message : String(error));
-    if (error instanceof Error && error.stack) {
-      console.error('   Stack trace:', error.stack.split('\n').slice(0, 3).join('\n'));
-    }
-    
-    console.log('\n⚠️  Falling back to basic information:');
-    console.log(`📝 Description: "${selectedJob.description || 'UNDEFINED/EMPTY'}"${selectedJob.description ? '...' : ''}`);
-    console.log(`🎯 Experience Level: ${selectedJob.experienceLevel || 'UNDEFINED'}`);
-    console.log(`📊 Total Applicants: ${selectedJob.totalApplicants || 'N/A'}`);
-    console.log(`📅 Posted: ${selectedJob.publishedDateTime || selectedJob.createdDateTime || 'N/A'}`);
-    console.log(`🏢 Category: ${selectedJob.category || 'N/A'} / ${selectedJob.subcategory || 'N/A'}`);
-    console.log(`⭐ Premium: ${selectedJob.premium ? 'Yes' : 'No'}`);
-    console.log(`🏢 Enterprise: ${selectedJob.enterprise ? 'Yes' : 'No'}`);
-    console.log(`💼 Budget Type: ${selectedJob.hourlyBudgetType || 'N/A'}`);
-    console.log(`👥 Freelancers to Hire: ${selectedJob.freelancersToHire || selectedJob.totalFreelancersToHire || 'N/A'}`);
-    console.log(`✅ Already Applied: ${selectedJob.applied ? 'Yes' : 'No'}`);
+    console.error('❌ Error fetching job details:', error instanceof Error ? error.message : 'Unknown error');
   }
 
-  // Ask what action the user wants to take
-  const { action } = await inquirer.prompt([
+  // Show full job description
+  const jobData = comprehensiveJobData || selectedJob;
+  console.log('\n📝 DESCRIPTION:');
+  console.log('='.repeat(80));
+  console.log(jobData.description || 'No description available');
+  console.log('='.repeat(80));
+
+  // Start job navigation menu
+  await handleJobNavigation(selectedJob, comprehensiveJobData, jobsManager, upworkApi, []);
+}
+
+// Handle job navigation with keyboard controls
+async function handleJobNavigation(
+  selectedJob: JobData,
+  comprehensiveJobData: JobData | null,
+  jobsManager: any,
+  _upworkApi: any,
+  _allJobs: JobData[]
+): Promise<void> {
+  while (true) {
+    const { jobAction } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'jobAction',
+        message: '🎮 Choose action for this job:',
+        choices: [
+          { name: '📝 Apply (generate proposal)', value: 'apply' },
+          { name: '❌ Not interested', value: 'not_interested' },
+          { name: '⏭️ Skip job', value: 'skip' },
+          { name: '🚪 Quit', value: 'quit' }
+        ],
+        pageSize: 4
+      }
+    ]);
+    
+    switch (jobAction) {
+      case 'apply':
+        const applied = await handleApplyToJob(selectedJob, comprehensiveJobData, jobsManager);
+        if (applied) return; // Exit after successful application
+        continue;
+        
+      case 'not_interested':
+        await handleNotInterested(selectedJob, jobsManager);
+        return; // Exit after marking as not interested
+        
+      case 'skip':
+        console.log('\n⏭️ Skipping this job...');
+        return; // Exit and return to job selection
+        
+      case 'quit':
+        console.log('\n👋 Goodbye!');
+        process.exit(0);
+    }
+  }
+}
+
+// Handle marking job as not interested
+async function handleNotInterested(selectedJob: JobData, jobsManager: any): Promise<void> {
+  const { notes } = await inquirer.prompt([
     {
-      type: 'list',
-      name: 'action',
-      message: 'What would you like to do with this job?',
-      choices: [
-        { name: '📝 Generate a proposal', value: 'generate' },
-        { name: '❌ Mark as not interested', value: 'not-interested' },
-        { name: '⏭️  Skip for now', value: 'skip' }
-      ],
-      default: 'generate'
+      type: 'input',
+      name: 'notes',
+      message: 'Add notes (optional):',
+      default: ''
     }
   ]);
 
-  let proposalPath: string | undefined;
+  const success = jobsManager.markAsNotInterested(selectedJob.id, selectedJob.title, notes || undefined);
+  
+  if (success) {
+    console.log('✅ Job marked as not interested. It will not appear in future searches.');
+    showStats(jobsManager);
+  } else {
+    console.log('❌ Failed to mark job as not interested.');
+  }
+}
 
-  if (action === 'not-interested') {
-    // Handle marking job as not interested
+
+
+
+
+// Handle applying to job
+async function handleApplyToJob(
+  selectedJob: JobData, 
+  comprehensiveJobData: JobData | null,
+  jobsManager: any
+): Promise<boolean> {
+  console.log('\n🔄 Preparing to generate proposal...');
+  
+  // Import ProposalGenerator
+  const { ProposalGenerator } = await import('../services/ProposalGenerator');
+  const proposalGenerator = new ProposalGenerator();
+  
+  // Get available templates and recommendation
+  const availableTemplates = proposalGenerator.getAvailableTemplates();
+  const recommended = proposalGenerator.getRecommendedTemplate(comprehensiveJobData || selectedJob);
+  
+  if (availableTemplates.length === 0) {
+    console.log('❌ No templates found in ./templates/ directory');
+    return false;
+  }
+  
+  // Create choices for template selection
+  const templateChoices = availableTemplates.map(filename => {
+    const displayName = filename === recommended.filename ? 
+      `${proposalGenerator.getTemplateDisplayName(filename)} (Recommended)` :
+      proposalGenerator.getTemplateDisplayName(filename);
+    
+    return {
+      name: displayName,
+      value: filename,
+      short: filename.replace('.txt', '')
+    };
+  });
+  
+  console.log(`💡 Recommended template: ${recommended.displayName}`);
+  
+  // Prompt for template selection
+  const { selectedTemplate } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'selectedTemplate',
+      message: 'Choose a template for your proposal:',
+      choices: templateChoices,
+      default: recommended.filename,
+      pageSize: 12
+    }
+  ]);
+  
+  console.log(`📝 Using template: ${proposalGenerator.getTemplateDisplayName(selectedTemplate)}`);
+  
+  let proposalPath: string | undefined;
+  
+  try {
+    const result = await proposalGenerator.generateProposal(comprehensiveJobData || selectedJob, selectedTemplate);
+    
+    if (result.success) {
+      console.log('✅ Proposal generated successfully!');
+      console.log(`📁 Saved to: ${result.outputPath}`);
+      console.log(`📄 Template used: ${result.templateUsed}`);
+      proposalPath = result.outputPath;
+      
+      // Optionally show a preview
+      const { showPreview } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'showPreview',
+          message: 'Show preview?',
+          default: false
+        }
+      ]);
+      
+      if (showPreview && result.proposalContent) {
+        console.log('\n' + '='.repeat(60));
+        console.log('📄 PROPOSAL PREVIEW');
+        console.log('='.repeat(60));
+        console.log(result.proposalContent.substring(0, 500) + (result.proposalContent.length > 500 ? '...\n\n[Preview truncated]' : ''));
+        console.log('='.repeat(60));
+      }
+    } else {
+      console.log('❌ Failed to generate proposal:', result.error);
+      return false;
+    }
+  } catch (error) {
+    console.log('❌ Error generating proposal:', error instanceof Error ? error.message : 'Unknown error');
+    return false;
+  }
+
+  // Ask if user wants to mark as applied
+  const { markAsApplied } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'markAsApplied',
+      message: 'Mark this job as applied to?',
+      default: false
+    }
+  ]);
+
+  if (markAsApplied) {
     const { notes } = await inquirer.prompt([
       {
         type: 'input',
@@ -693,163 +760,39 @@ async function main() {
       }
     ]);
 
-    const success = jobsManager.markAsNotInterested(selectedJob.id, selectedJob.title, notes || undefined);
-    
+    const success = jobsManager.markAsApplied(
+      selectedJob.id,
+      selectedJob.title,
+      proposalPath,
+      notes || undefined
+    );
+
     if (success) {
-      console.log('✅ Job marked as not interested. It will not appear in future searches.');
+      console.log('✅ Job marked as applied!');
+      showStats(jobsManager);
     } else {
-      console.log('❌ Failed to mark job as not interested.');
-    }
-    
-    // Show updated stats
-    const stats = jobsManager.getStats();
-    console.log('\n📊 TRACKING STATISTICS:');
-    console.log(`   📝 Applied: ${stats.applied}`);
-    console.log(`   💬 Responses: ${stats.responses}`);
-    console.log(`   🎯 Interviews: ${stats.interviews}`);
-    console.log(`   ✅ Hired: ${stats.hired}`);
-    console.log(`   ❌ Rejected: ${stats.rejected}`);
-    console.log(`   🚫 Not Interested: ${stats.notInterested}`);
-    console.log(`   📊 Total Tracked: ${stats.total}`);
-    
-    return;
-  }
-
-  if (action === 'skip') {
-    console.log('⏭️ Skipping this job for now.');
-    return;
-  }
-
-  if (action === 'generate') {
-    console.log('\n🔄 Preparing to generate proposal...');
-    
-    // Import ProposalGenerator
-    const { ProposalGenerator } = await import('../services/ProposalGenerator');
-    const proposalGenerator = new ProposalGenerator();
-    
-    // Get available templates and recommendation
-    const availableTemplates = proposalGenerator.getAvailableTemplates();
-    const recommended = proposalGenerator.getRecommendedTemplate(comprehensiveJobData || selectedJob);
-    
-    if (availableTemplates.length === 0) {
-      console.log('❌ No templates found in ./templates/ directory');
-      return;
-    }
-    
-    // Create choices for template selection
-    const templateChoices = availableTemplates.map(filename => {
-      const displayName = filename === recommended.filename ? 
-        `${proposalGenerator.getTemplateDisplayName(filename)} (Recommended)` :
-        proposalGenerator.getTemplateDisplayName(filename);
-      
-      return {
-        name: displayName,
-        value: filename,
-        short: filename.replace('.txt', '')
-      };
-    });
-    
-    // Find the recommended template in choices to set as default
-    const defaultChoice = templateChoices.find(choice => choice.value === recommended.filename);
-    
-    console.log(`💡 Recommended template: ${recommended.displayName}`);
-    
-    // Prompt for template selection
-    const { selectedTemplate } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'selectedTemplate',
-        message: 'Choose a template for your proposal:',
-        choices: templateChoices,
-        default: defaultChoice?.value || templateChoices[0]?.value,
-        pageSize: 12
-      }
-    ]);
-    
-    console.log(`📝 Using template: ${proposalGenerator.getTemplateDisplayName(selectedTemplate)}`);
-    
-    try {
-      const result = await proposalGenerator.generateProposal(comprehensiveJobData || selectedJob, selectedTemplate);
-      
-      if (result.success) {
-        console.log('✅ Proposal generated successfully!');
-        console.log(`📁 Saved to: ${result.outputPath}`);
-        console.log(`📄 Template used: ${result.templateUsed}`);
-        proposalPath = result.outputPath;
-        
-        // Optionally show a preview of the proposal
-        const { showPreview } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'showPreview',
-            message: 'Would you like to see a preview of the proposal?',
-            default: false
-          }
-        ]);
-        
-        if (showPreview && result.proposalContent) {
-          console.log('\n' + '='.repeat(60));
-          console.log('📄 PROPOSAL PREVIEW');
-          console.log('='.repeat(60));
-          console.log(result.proposalContent.substring(0, 500) + (result.proposalContent.length > 500 ? '...\n\n[Preview truncated - see full proposal in output file]' : ''));
-          console.log('='.repeat(60));
-        }
-        
-      } else {
-        console.log('❌ Failed to generate proposal:', result.error);
-      }
-    } catch (error) {
-      console.log('❌ Error generating proposal:', error instanceof Error ? error.message : 'Unknown error');
-    }
-
-    // Ask if user wants to mark as applied after generating proposal
-    const { markAsApplied } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'markAsApplied',
-        message: 'Mark this job as applied to?',
-        default: false
-      }
-    ]);
-
-    if (markAsApplied) {
-      const { notes } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'notes',
-          message: 'Add notes (optional):',
-          default: ''
-        }
-      ]);
-
-      const success = jobsManager.markAsApplied(
-        selectedJob.id,
-        selectedJob.title,
-        proposalPath, // Now includes the proposal path if generated
-        notes || undefined
-      );
-
-      if (success) {
-        console.log('✅ Job marked as applied!');
-      } else {
-        console.log('❌ Failed to mark job as applied');
-      }
-
-      // Show updated stats
-      const stats = jobsManager.getStats();
-      console.log('\n📊 TRACKING STATISTICS:');
-      console.log(`   📝 Applied: ${stats.applied}`);
-      console.log(`   💬 Responses: ${stats.responses}`);
-      console.log(`   🎯 Interviews: ${stats.interviews}`);
-      console.log(`   ✅ Hired: ${stats.hired}`);
-      console.log(`   ❌ Rejected: ${stats.rejected}`);
-      console.log(`   🚫 Not Interested: ${stats.notInterested}`);
-      console.log(`   📊 Total Tracked: ${stats.total}`);
+      console.log('❌ Failed to mark job as applied');
     }
   }
-
-  console.log('\n👋 All done! Goodbye!');
+  
+  return true;
 }
+
+
+
+// Show job tracking statistics  
+function showStats(jobsManager: any): void {
+  const stats = jobsManager.getStats();
+  console.log('\n📊 TRACKING STATISTICS:');
+  console.log(`   📝 Applied: ${stats.applied}`);
+  console.log(`   💬 Responses: ${stats.responses}`);
+  console.log(`   🎯 Interviews: ${stats.interviews}`);
+  console.log(`   ✅ Hired: ${stats.hired}`);
+  console.log(`   ❌ Rejected: ${stats.rejected}`);
+  console.log(`   🚫 Not Interested: ${stats.notInterested}`);
+  console.log(`   📊 Total Tracked: ${stats.total}`);
+}
+
 
 // Argument parsing for special modes
 (async (): Promise<void> => {
@@ -907,6 +850,31 @@ async function main() {
           if (field.description) console.log(`    - ${field.description}`);
         });
       }
+      
+      if (typeData.enumValues) {
+        console.log('\nEnum Values:');
+        typeData.enumValues.forEach((enumValue: any) => {
+          console.log(`  • ${enumValue.name}`);
+          if (enumValue.description) console.log(`    - ${enumValue.description}`);
+          if (enumValue.deprecationReason) console.log(`    ⚠️ DEPRECATED: ${enumValue.deprecationReason}`);
+        });
+      }
+      
+      if (typeData.inputFields) {
+        console.log('\nInput Fields:');
+        typeData.inputFields.forEach((inputField: any) => {
+          const getTypeName = (type: any): string => {
+            if (type.name) return type.name;
+            if (type.ofType) return getTypeName(type.ofType);
+            return 'Unknown';
+          };
+          
+          const typeName = getTypeName(inputField.type);
+          console.log(`  • ${inputField.name}: ${typeName}`);
+          if (inputField.description) console.log(`    - ${inputField.description}`);
+        });
+      }
+      
       console.log('='.repeat(80));
     } else {
       console.log(`❌ Type '${typeName}' not found or no data returned.`);

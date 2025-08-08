@@ -28,6 +28,10 @@ export class JobsManager {
       const filePath = path.resolve(this.jobsFile);
       if (fs.existsSync(filePath)) {
         const data = fs.readFileSync(filePath, 'utf8');
+        if (data.trim() === '') {
+          this.trackedJobs = new Map();
+          return;
+        }
         const trackedJobsArray: TrackedJob[] = JSON.parse(data);
         
         // Convert array to Map for O(1) lookups

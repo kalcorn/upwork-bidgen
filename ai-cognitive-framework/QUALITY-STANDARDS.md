@@ -317,6 +317,57 @@ Tool limitation ignorance combined with assumption-based analysis instead of sys
 
 ---
 
+### **2025-08-07 - Learning Update: Comprehensive Validation & Mandate Adherence**
+
+**Discovery:**
+Repeated failures in validation (build vs. runtime, insufficient testing) and premature implementation despite explicit mandates. Lack of immediate UI update for new features. Inadequate platform awareness for shell commands.
+
+**Root Cause Analysis:**
+Over-reliance on assumptions, insufficient rigor in applying Rule #7 (USE PROPER VALIDATION) across all stages (build, runtime, functional, UX, regression). Failure to strictly adhere to Rule #5 (WAIT FOR EXPLICIT DIRECTION) by acting without explicit user confirmation. Incomplete consideration of environmental context (OS) for tool execution. Oversight in updating user-facing documentation for new features (Rule #10).
+
+**Application:**
+- **Deepen "USE PROPER VALIDATION" (Rule #7):** Validation is a multi-faceted process. Always perform comprehensive checks:
+    - **Build/Compilation:** Verify code compiles.
+    - **Runtime/Execution:** Confirm application runs without errors.
+    - **Functional:** Test the specific feature works as intended.
+    - **User Experience:** Ensure seamless integration and clear feedback.
+    - **Regression:** Verify existing functionality is preserved.
+    - **Dependency Validation (TypeScript):** Explicitly validate type definitions (`@types` or `.d.ts`) for new libraries.
+- **Reinforce "WAIT FOR EXPLICIT DIRECTION" (Rule #5):** Strictly adhere to waiting for explicit user confirmation before *any* modification, installation, or execution. Avoid presumptive implementation.
+- **Enhance Platform Awareness:** Before suggesting or executing shell commands, explicitly verify their compatibility with the current operating system.
+- **Prioritize User Experience (Rule #10):** Any change to user interaction or available functionality must be immediately reflected in the user interface or documentation to maintain discoverability and usability.
+
+**Implementation:**
+- Updated `JobsManager.ts` to handle empty JSON files gracefully.
+- Integrated `country-to-iso` library with correct TypeScript import and usage.
+- Modified `InteractiveTable.ts` and `src/cli/index.ts` for dynamic, bracketed control display.
+- Corrected `src/cli/index.ts` to remove job filtering and integrate job statuses for persistent visual feedback.
+- This learning update is being added to `QUALITY-STANDARDS.md` to formalize these new protocols.
+
+---
+
+### **2025-08-08 - Learning Update: Completion Verification & Systematic Refactoring**
+
+**Discovery:**
+Multiple critical lessons emerged during job loading optimization work: premature completion claims, navigation/loading state confusion, bandaid solution proliferation, and domain logic separation issues.
+
+**Root Cause Analysis:** 
+Violated Rule #7 (USE PROPER VALIDATION) by claiming completion without build verification. Applied quick fixes instead of systematic analysis when similar problems emerged. Confused domain-specific logic with generic component concerns.
+
+**Application:**
+- **BUILD VERIFICATION MANDATE:** Never claim "Implementation Complete" or "✅" without running build/compile/test commands first
+- **SYSTEMATIC REFACTORING:** When adding second similar fix, step back and identify the underlying pattern - implement one correct solution instead of multiple bandaids
+- **NAVIGATION CONCERN SEPARATION:** Distinguish between user navigation (should never block) and background operations (can have state management)
+- **DOMAIN LOGIC BOUNDARIES:** Keep business/domain-specific logic separate from reusable generic components
+
+**Implementation:**
+- Enhanced completion verification protocols requiring empirical validation
+- Established "two bandaids = refactor signal" pattern recognition
+- Integrated concern separation principles into component design standards
+- Updated systematic thinking protocols to catch similar architectural issues
+
+---
+
 **🧠 STATUS:** ✅ **QUALITY STANDARDS SYSTEM OPERATIONAL**
 
 *These quality excellence standards provide systematic approaches to maintaining high standards while fostering continuous learning, improvement, and effective communication across any project or domain.*

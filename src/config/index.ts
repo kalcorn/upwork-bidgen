@@ -12,7 +12,7 @@ const config: AppConfig = {
     useApi: true,
     oauthRedirectUri: 'https://google.com/',
     searchFilters: {
-            sortAttributes: [{ field: "RECENCY" }],
+      sortAttributes: [{ field: "RECENCY" }],
       searchType: "USER_JOBS_SEARCH",
       marketPlaceJobFilter: {
         hourlyRate_eq: {
@@ -25,7 +25,7 @@ const config: AppConfig = {
         },
         pagination_eq: {
           after: "0",
-          first: 25
+          first: 50
         },
         //jobType_eq: "HOURLY", // HOURLY | FIXED
         categoryIds_any: [
