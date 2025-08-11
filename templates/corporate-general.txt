@@ -1,0 +1,41 @@
+🙋‍♂️ Hi [Client First Name or "there"],
+
+I saw your post for a [Job Title] at [Company Name] and was immediately drawn to your goal of [Key Outcome or Problem — 3–7 words].
+
+You're likely looking for more than just a coder—you need a partner who can dive in quickly, deliver results without hand-holding, and eliminate risk, delay, and technical debt with confidence.
+
+That’s exactly where I come in.
+
+I'm Chris Alcorn, a Principal Software Architect with over 20 years of full-stack experience. I've led mission-critical projects for NASDAQ-listed companies like SSNC and CENX, built financial systems trusted by hedge funds on Wall Street, and collaborated with engineers from Microsoft, IBM, and Harmon Kardon on performance-critical platforms.
+
+🚀 Why Clients Choose Me:
+• Proactive Communication – Clear, no-fluff updates at every step  
+• Strategic Ownership – End-to-end delivery from architecture to deployment  
+• Peace of Mind – No surprises, no tech debt—just smooth, secure execution  
+• Immediate Impact – Clean, scalable, production-ready code from day one
+
+💻 Technical Expertise:
+• Node.js, TypeScript, React, Angular, Java, C#, PHP  
+• AWS, Azure, GCP – scalable, performant, cost-efficient infrastructure  
+• PostgreSQL, SQL Server, MySQL, MongoDB  
+• HIPAA, SOX, FINRA, Twilio, Telnyx, SIP, SMS/MMS
+
+📜 Certifications:
+• CompTIA: Security+, Project+, Network+, A+  
+• Microsoft Certified Professional  
+• CIW: Web Dev, JavaScript, Database Specialist
+
+🌟 What Clients Say:
+"Chris rapidly turned a complex, failing project into a robust, scalable solution. His clarity, speed, and quality exceeded expectations." — Senior Director, Financial Services Sector
+
+📆 Availability:
+I'm available immediately (40+ hrs/week) and ready to contribute.
+
+I'd be happy to provide a quick technical assessment of your project requirements—no obligation, just professional insights that might help clarify your approach.
+
+Whether you prefer to discuss details here or schedule a brief call, I'm committed to helping you make the best decision for your project's success.
+
+Best regards,  
+Chris Alcorn  
+Principal Software Architect  
+🌐 https://alcorn.dev

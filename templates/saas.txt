@@ -1,0 +1,22 @@
+🙋‍♂️ Hi [Client],
+
+Your [Job Title] project involves SaaS development where user experience, data security, and scalable architecture directly determine customer retention and business growth.
+
+I specialize in building SaaS platforms that deliver exceptional user experiences while maintaining enterprise-grade security and performance.
+
+I'm Chris Alcorn, a full-stack software architect with 20+ years of experience delivering scalable SaaS systems in fintech, healthcare, productivity, and telecom. I specialize in React, Node, serverless, and secure multi-tenant cloud systems.
+
+🚀 SaaS Platform Expertise:
+• Multi-Tenant Architecture – Secure, scalable systems with tenant isolation and shared resources
+• Subscription Management – Complex billing, usage tracking, and revenue optimization
+• User Experience Design – Intuitive dashboards and workflows that drive user adoption
+• Enterprise Integration – SSO, API access, and compliance features that enterprise clients require
+
+📆 I'm available immediately (40+ hrs/week).
+
+If you're looking for someone who can jump in with little ramp-up and deliver smooth, scalable code — let's talk.
+
+Best regards,  
+Chris Alcorn  
+Principal Software Architect  
+🌐 https://alcorn.dev

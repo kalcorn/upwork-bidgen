@@ -1,0 +1,98 @@
+query SearchJobs($sortAttributes: [MarketplaceJobPostingSearchSortAttribute!], $searchType: MarketplaceJobPostingSearchType!, $marketPlaceJobFilter: MarketplaceJobPostingsSearchFilter!) {
+  marketplaceJobPostingsSearch(
+    sortAttributes: $sortAttributes
+    searchType: $searchType
+    marketPlaceJobFilter: $marketPlaceJobFilter
+  ) {
+    edges {
+      node {
+        id
+        title
+        description
+        ciphertext
+        duration
+        durationLabel
+        engagement
+        recordNumber
+        experienceLevel
+        category
+        subcategory
+        freelancersToHire
+        enterprise
+        relevanceEncoded
+        totalApplicants
+        preferredFreelancerLocation
+        preferredFreelancerLocationMandatory
+        premium
+        clientNotSureFields
+        clientPrivateFields
+        applied
+        createdDateTime
+        publishedDateTime
+        renewedDateTime
+        hourlyBudgetType
+        localJobUserDistance
+        totalFreelancersToHire
+        teamId
+        amount {
+          rawValue
+          currency
+          displayValue
+        }
+        hourlyBudgetMin {
+          rawValue
+          currency
+          displayValue
+        }
+        hourlyBudgetMax {
+          rawValue
+          currency
+          displayValue
+        }
+        weeklyBudget {
+          rawValue
+          currency
+          displayValue
+        }
+        engagementDuration {
+          id
+          label
+          weeks
+        }
+        relevance {
+          id
+          effectiveCandidates
+          recommendedEffectiveCandidates
+          uniqueImpressions
+          publishTime
+          hoursInactive
+        }
+        client {
+          totalHires
+          totalPostedJobs
+          totalSpent {
+            rawValue
+            currency
+            displayValue
+          }
+          verificationStatus
+          location {
+            country
+            city
+            state
+            timezone
+          }
+          totalReviews
+          totalFeedback
+          companyName
+          hasFinancialPrivacy
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    totalCount
+  }
+}

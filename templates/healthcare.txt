@@ -1,0 +1,29 @@
+🙋‍♂️ Hi [Client],
+
+Your [Job Title] project requires more than standard development—healthcare systems demand HIPAA expertise, security-first architecture, and understanding of clinical workflows where patient safety is paramount.
+
+This is precisely the specialized knowledge I've built my career around.
+
+I'm Chris Alcorn, a Principal Software Architect with over 20 years of experience building secure, HIPAA-compliant platforms for startups and enterprise clients. Whether you're working on EMR systems, patient portals, or telehealth tools — I can help you move quickly while staying compliant and scalable.
+
+🏥 Why Healthcare Clients Choose Me:
+• HIPAA Compliance Expertise – End-to-end data protection with encryption, access controls, and audit trails
+• Clinical Workflow Understanding – Systems designed around actual healthcare provider needs and patient safety
+• Interoperability Specialist – HL7 FHIR integration and healthcare data exchange protocols
+• Regulatory Audit Ready – Documentation and architecture that passes compliance reviews consistently
+
+📜 Healthcare-Relevant Certifications:
+• CompTIA Security+, Network+ (Healthcare cybersecurity focus)
+• Microsoft Certified Professional  
+• HIPAA Security Rule Compliance Training
+• Healthcare Data Privacy & Security Specialist
+
+📆 Availability:
+Available immediately (40+ hrs/week) and can begin with a HIPAA compliance assessment within 24 hours.
+
+I'd be happy to provide a preliminary security and compliance review of your project requirements—this often helps identify potential issues before development begins, saving both time and money.
+
+Best regards,  
+Chris Alcorn  
+Principal Software Architect  
+🌐 https://alcorn.dev

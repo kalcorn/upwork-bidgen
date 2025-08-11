@@ -1,0 +1,44 @@
+query IntrospectType($typeName: String!) {
+  __type(name: $typeName) {
+    name
+    description
+    kind
+    fields {
+      name
+      description
+      type {
+        name
+        kind
+        ofType {
+          name
+          kind
+          ofType {
+            name
+            kind
+            ofType {
+              name
+              kind
+            }
+          }
+        }
+      }
+    }
+    enumValues {
+      name
+      description
+      deprecationReason
+    }
+    inputFields {
+      name
+      description
+      type {
+        name
+        kind
+        ofType {
+          name
+          kind
+        }
+      }
+    }
+  }
+}

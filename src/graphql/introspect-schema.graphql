@@ -1,0 +1,18 @@
+query IntrospectJobSchema {
+  __schema {
+    types {
+      name
+      description
+      fields {
+        name
+        type {
+          name
+          ofType {
+            name
+          }
+        }
+        description
+      }
+    }
+  }
+}

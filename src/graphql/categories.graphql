@@ -1,0 +1,10 @@
+query GetCategories {
+  ontologyCategories {
+    id
+    preferredLabel
+    subcategories {
+      id
+      preferredLabel
+    }
+  }
+}

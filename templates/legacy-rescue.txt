@@ -1,0 +1,28 @@
+🙋‍♂️ Hi [Client],
+
+Your [Job Title] project addresses a critical business challenge—legacy systems that have become technical debt, limiting growth and increasing operational risk.
+
+I specialize in transforming these systems without disrupting your business operations.
+
+I'm Chris Alcorn, a Principal Software Architect with 20+ years of experience modernizing systems without breaking what works. I've rescued legacy PHP, Java, .NET, and monolithic platforms, transforming them into scalable, secure, maintainable solutions with proven methodologies.
+
+🚀 Why Legacy Modernization Clients Choose Me:
+• Risk Mitigation First – Incremental modernization that maintains business continuity
+• Zero-Downtime Migrations – Strategies that keep systems running during transformation
+• Technical Debt Resolution – Address root causes, not just symptoms of legacy problems
+• Stakeholder Communication – Clear progress tracking and risk assessment throughout the process
+
+💻 Legacy Modernization Results:
+• Healthcare System: Migrated 300k-line .NET monolith to Node.js microservices—reduced deployment time from 4 hours to 15 minutes
+• Fintech Platform: Refactored legacy app to GraphQL & React—improved page load times by 75% and reduced technical debt by 60%
+• Telecom Infrastructure: Containerized legacy systems with zero downtime—achieved 99.9% uptime and 40% cost reduction
+
+📆 Availability:
+I can start immediately (40+ hrs/week).
+
+I'd be happy to provide a free legacy system assessment and modernization roadmap—this typically takes 30 minutes and gives you a clear picture of timeline, risks, and expected outcomes before you commit to any work.
+
+Best regards,  
+Chris Alcorn  
+Principal Software Architect  
+🌐 https://alcorn.dev

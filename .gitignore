@@ -1,0 +1,83 @@
+# Unified bidgen configuration (encrypted credentials, job tracking, daemon status)
+bidgen.json
+
+# Legacy config files (replaced by bidgen.json)
+.upwork-credentials.json
+.applied-jobs.json
+.daemon-status.json
+.jobs.json
+
+# Encryption key file
+.encryption-key
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Generated output files
+output/
+
+.claude/
+dist/
+
+# HTTPS Certificates and private keys (SECURITY SENSITIVE)
+certs/
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx

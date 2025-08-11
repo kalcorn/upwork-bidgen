@@ -1,0 +1,22 @@
+🙋‍♂️ Hi [Client],
+
+Your [Job Title] project involves AI/ML implementation where the challenge isn't just technical integration—it's delivering practical business value while managing costs, accuracy, and user experience.
+
+This is precisely where most AI projects fail, and where my specialized expertise makes the difference.
+
+I’m Chris Alcorn, a full-stack developer with experience integrating GPT, Claude, Gemini, Cohere, Pinecone, Weaviate, and custom embedding pipelines. I’ve built internal LLM tools, frontends, memory loops, and backend APIs across industries.
+
+🤖 AI/ML Implementation Expertise:
+• Production RAG Systems – Context-aware applications with vector search and retrieval chains
+• Cost-Effective AI Architecture – Token optimization and intelligent caching strategies  
+• Model Governance – Evaluation frameworks, prompt versioning, and quality monitoring
+• Business-Ready Integration – User-friendly interfaces that deliver measurable value
+
+📆 I’m available immediately (40+ hrs/week) and can move fast.
+
+Happy to discuss what you’re building and suggest ways to improve relevance, latency, or control cost.
+
+Best regards,  
+Chris Alcorn  
+Principal Software Architect  
+🌐 https://alcorn.dev
