@@ -54,7 +54,7 @@ export class NavigableKeyboardMenu<T = string> {
       }
     });
     
-    console.log('\n↑/↓ Navigate | Enter to select');
+    console.log('\n↑/↓ Navigate | Enter to select | [ESC] to Exit');
     this.hasDrawnBefore = true;
   }
 
@@ -91,7 +91,7 @@ export class NavigableKeyboardMenu<T = string> {
           // Enter key - select current item
           const selectedOption = this.options.options[this.selectedIndex];
           if (selectedOption) {
-            this.cleanup();
+            this.cleanup(true); // Preserve stdin state for table resume
             process.stdin.removeListener('keypress', keypressHandler);
             resolve(selectedOption.value);
           }
@@ -99,6 +99,10 @@ export class NavigableKeyboardMenu<T = string> {
           // Ctrl+C - exit
           this.cleanup();
           process.exit(0);
+        } else if (key.name === 'escape') { // Handle Escape key
+          this.cleanup(true); // Preserve stdin state for table resume
+          process.stdin.removeListener('keypress', keypressHandler);
+          resolve('escape-key-pressed' as T); // Resolve with a special value
         } else if (key.name && key.name.length === 1) {
           // Direct key press - check if it matches any option
           const inputKey = this.options.caseSensitive ? key.name : key.name.toLowerCase();
@@ -107,7 +111,7 @@ export class NavigableKeyboardMenu<T = string> {
           );
           
           if (matchingOption) {
-            this.cleanup();
+            this.cleanup(true); // Preserve stdin state for table resume
             process.stdin.removeListener('keypress', keypressHandler);
             resolve(matchingOption.value);
           }
@@ -119,11 +123,13 @@ export class NavigableKeyboardMenu<T = string> {
     });
   }
 
-  private cleanup(): void {
-    if (process.stdin.setRawMode) {
-      process.stdin.setRawMode(false);
+  private cleanup(preserveStdinState: boolean = false): void {
+    if (!preserveStdinState) {
+      if (process.stdin.setRawMode) {
+        process.stdin.setRawMode(false);
+      }
+      process.stdin.pause();
     }
-    process.stdin.pause();
     this.keyListenerSetup = false;
   }
 

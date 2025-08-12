@@ -87,6 +87,26 @@ npm run dev
 ```
 When no arguments are provided, the system defaults to job search mode for easy testing.
 
+## Configuration
+
+This project uses a central configuration file named `bidgen.json` to manage all settings and credentials.
+
+To get started, simply copy the sample configuration file:
+
+```bash
+cp bidgen-sample.json bidgen.json
+```
+
+Then, edit `bidgen.json` to fill in your personal details in the `user` section.
+
+To use the Upwork API features, you will need to obtain API credentials from Upwork and run the setup command:
+
+```bash
+npm run dev -- setup
+```
+
+This will securely encrypt and save your API key and secret in your `bidgen.json` file.
+
 ## How It Works
 
 ### 1. Intelligent Job Analysis

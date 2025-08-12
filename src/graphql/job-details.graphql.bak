@@ -114,11 +114,11 @@ query GetCompleteJobDetails($jobId: ID!) {
     
     # Ownership Information
     ownership {
-      # company {
-      #   id
-      #   name
-      #   # description field not available in GenericOrganization
-      # }
+      company {
+        id
+        name
+        # description field not available in GenericOrganization
+      }
       team {
         id
         name
@@ -127,28 +127,68 @@ query GetCompleteJobDetails($jobId: ID!) {
     }
     
     # Public Company Information - requires view_client_company permission
-    clientCompanyPublic {
-      id
-      legacyType
-      teamsEnabled
-      canHire
-      hidden
-      country {
-        name
-      }
-      state
-      city
-      timezone
-      accountingEntity
-      billingType
-    }
+    # clientCompanyPublic {
+      # id
+      # legacyType
+      # teamsEnabled
+      # canHire
+      # hidden
+      # country {
+        # name
+        # code field not available in Country
+      # }
+      # state
+      # city
+      # timezone
+      # accountingEntity
+      # billingType
+      # paymentVerification {
+        # status field requires OAuth permissions not available
+        # verifiedAt field not available in PaymentVerificationResult
+      # }
+      # agencyDetails {
+        # Add agency detail fields when available
+        # id field not available in AgencyDetails
+      # }
+    # }
     
     # Activity Statistics - requires view_client_company permission
-    activityStat {
-      jobActivity {
-        totalHired
-      }
-    }
+    # activityStat {
+      # Applications and Bid Stats
+      # applicationsBidStats {
+        # avgRateBid {
+          # rawValue
+          # currency
+          # displayValue
+        # }
+        # minRateBid {
+          # rawValue
+          # currency
+          # displayValue
+        # }
+        # maxRateBid {
+          # rawValue
+          # currency
+          # displayValue
+        # }
+        # avgInterviewedRateBid {
+          # rawValue
+          # currency
+          # displayValue
+        # }
+      # }
+      
+      # Job Activity
+      # jobActivity {
+        # lastClientActivity  # requires view_client_company permission
+        # invitesSent
+        # totalInvitedToInterview
+        # totalHired
+        # totalUnansweredInvites
+        # totalOffered
+        # totalRecommended
+      # }
+    # }
     
     # Annotations
     annotations {
@@ -161,20 +201,21 @@ query GetCompleteJobDetails($jobId: ID!) {
     
     # Attachments
     attachments {
+      # Add attachment fields when available
       id
     }
     
     # Segmentation Data
-    segmentationData {
-      segmentationValues {
-        customValue
-      }
-    }
+    # segmentationData {
+      # Add segmentation fields when available
+      # id field not available in MarketplaceSegmentationData
+    # }
     
     # Additional Search Info
-    additionalSearchInfo {
-      highlightTitle
-    }
+    # additionalSearchInfo {
+      # Add additional search info fields when available
+      # id field not available in MarketplaceAdditionalSearchInfo
+    # }
     
     # Client Proposals (pagination args not supported)
     # clientProposals {

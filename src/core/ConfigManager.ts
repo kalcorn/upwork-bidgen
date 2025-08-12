@@ -42,7 +42,7 @@ export interface UnifiedConfig {
   jobs: {
     tracked: TrackedJob[];
   };
-  upworkApi: AppConfig['upwork'];
+  upworkApi: AppConfig['upworkApi'];
   user: AppConfig['user'];
   templates: AppConfig['templates'];
   ai: AppConfig['ai'];
@@ -259,12 +259,25 @@ export class ConfigManager {
     return ['not-interested', 'applied', 'response', 'interview', 'hired'].includes(job.status);
   }
 
+  removeTrackedJob(jobId: string): boolean {
+    if (!this.config) return false;
+    
+    const initialLength = this.config.jobs.tracked.length;
+    this.config.jobs.tracked = this.config.jobs.tracked.filter(j => j.id !== jobId);
+    
+    if (this.config.jobs.tracked.length < initialLength) {
+      return this.saveConfig();
+    }
+    
+    return false; // Job wasn't found
+  }
+
   // App Configuration Access
   getAppConfig(): AppConfig | null {
     if (!this.config) return null;
     
     return {
-      upwork: this.config.upworkApi,
+      upworkApi: this.config.upworkApi,
       user: this.config.user,
       templates: this.config.templates,
       ai: this.config.ai,
@@ -275,7 +288,7 @@ export class ConfigManager {
   updateAppConfig(updates: Partial<AppConfig>): boolean {
     if (!this.config) return false;
     
-    if (updates.upwork) this.config.upworkApi = { ...this.config.upworkApi, ...updates.upwork };
+    if (updates.upworkApi) this.config.upworkApi = { ...this.config.upworkApi, ...updates.upworkApi };
     if (updates.user) this.config.user = { ...this.config.user, ...updates.user };
     if (updates.templates) this.config.templates = { ...this.config.templates, ...updates.templates };
     if (updates.ai) this.config.ai = { ...this.config.ai, ...updates.ai };

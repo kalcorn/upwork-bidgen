@@ -1,7 +1,7 @@
 // src/types/Config.ts - Simplified configuration types
 
 export interface AppConfig {
-  upwork: UpWorkConfig;
+  upworkApi: UpWorkConfig;
   user: UserConfig;
   templates: TemplateConfig;
   ai: AIConfig;

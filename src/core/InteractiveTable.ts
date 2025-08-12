@@ -152,7 +152,7 @@ export class InteractiveTable<T> {
     
     if (!this.isFirstPage()) baseControls.push('[←] Prev Page');
     if (!this.isLastPage()) baseControls.push('[→] Next Page');
-    baseControls.push('[Q] Quit');
+    baseControls.push('[ESC] Quit'); // Changed from [Q] Quit
     console.log(baseControls.join(' | '));
   }
 
@@ -261,8 +261,8 @@ export class InteractiveTable<T> {
           }
         }
       }
-    } else if (key.name === 'q') {
-      // Q key - quit
+    } else if (key.name === 'escape') { // Handle Escape key for quitting
+      // Escape key - quit
       if (this.options.onQuit) {
         this.options.onQuit();
       }

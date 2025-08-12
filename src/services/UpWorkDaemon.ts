@@ -425,19 +425,12 @@ export class UpWorkDaemon {
     }
   }
 
-  // Static method to load daemon status from file
+  // Static method to load daemon status from unified config
   static loadStatusFromFile(): DaemonStatus | null {
     try {
-      const fs = require('fs');
-      const path = require('path');
-      const statusFile = path.resolve('.daemon-status.json');
-      
-      if (!fs.existsSync(statusFile)) {
-        return null;
-      }
-      
-      const data = fs.readFileSync(statusFile, 'utf8');
-      return JSON.parse(data) as DaemonStatus;
+      const { ConfigManager } = require('../core/ConfigManager');
+      const configManager = new ConfigManager();
+      return configManager.getDaemonStatus();
     } catch {
       return null;
     }

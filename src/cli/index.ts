@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 import inquirer from 'inquirer';
+import { GeminiRunner } from '../runners/GeminiRunner';
+import { ClaudeRunner } from '../runners/ClaudeRunner';
+
+
+
+
 import Table from 'cli-table3';
 import { UpWorkAPI, JobData } from '../core/UpWorkAPI';
 import { CredentialsManager } from '../core/CredentialsManager';
@@ -10,6 +16,8 @@ import { NavigableKeyboardMenu } from '../core/NavigableKeyboardMenu';
 import { ConfigManager } from '../core/ConfigManager';
 import colors from 'colors';
 import { countryToAlpha3 } from 'country-to-iso';
+
+import type { AIGenerator } from '../types/AIGenerator';
 
 // Helper function to format job data for table display
 function createJobTableColumns(): TableColumn[] {
@@ -30,9 +38,13 @@ function createJobTableColumns(): TableColumn[] {
           ? { ...content, content: colors.yellow.bold(content.content) }
           : colors.yellow.bold(content);
       } else if (job.status === 'not-interested') {
+        // Apply dim yellow to each word individually to prevent wrapping issues
+        const applyDimYellowPerWord = (text: string) => {
+          return text.split(' ').map(word => colors.yellow.dim(word)).join(' ');
+        };
         return typeof content === 'object'
-          ? { ...content, content: colors.yellow.bold(content.content) }
-          : colors.yellow.bold(content);
+          ? { ...content, content: applyDimYellowPerWord(content.content) }
+          : applyDimYellowPerWord(content);
       } else {
         return typeof content === 'object'
           ? { ...content, content: colors.yellow(content.content) }
@@ -245,7 +257,7 @@ async function main() {
   */
 
   console.log('🔍 Searching for relevant jobs on UpWork...');
-  const searchResults = await upworkApi.searchJobs(appConfig.upwork.searchFilters);
+  const searchResults = await upworkApi.searchJobs(appConfig.upworkApi.searchFilters);
 
   if (!searchResults || searchResults.jobs.length === 0) {
     console.log('❌ No jobs found matching your criteria. Try adjusting the filters in `src/config/index.ts`.');
@@ -514,9 +526,9 @@ async function loadMoreJobs(
     
     // Create pagination parameters for next batch
     const searchFilters = {
-      ...appConfig.upwork.searchFilters,
+      ...appConfig.upworkApi.searchFilters,
       marketPlaceJobFilter: {
-        ...appConfig.upwork.searchFilters.marketPlaceJobFilter,
+        ...appConfig.upworkApi.searchFilters.marketPlaceJobFilter,
         pagination_eq: {
           after: currentCursor || "0",
           first: 50
@@ -631,133 +643,213 @@ async function processSelectedJob(selectedJob: JobData, jobsManager: any, upwork
   }
 }
 
+// Custom display functions for specific data structures
+
 // Display comprehensive job data without arbitrary truncation
 function displayAllJobData(jobData: JobData): void {
   console.log('\n📋 COMPREHENSIVE JOB DETAILS:');
   console.log('='.repeat(80));
-  
-  // Basic Info
-  if (jobData.title) console.log(`📋 title: ${jobData.title}`);
-  if (jobData.id) console.log(`🆔 id: ${jobData.id}`);
-  if (jobData.ciphertext) console.log(`🔐 ciphertext: ${jobData.ciphertext}`);
-  
-  // Budget Information
-  if (jobData.amount?.displayValue && jobData.amount.displayValue !== '0.0') {
-    console.log(`💰 amount: ${jobData.amount.displayValue} (${jobData.amount.rawValue} ${jobData.amount.currency})`);
-  }
-  if (jobData.hourlyBudgetMin?.displayValue || jobData.hourlyBudgetMax?.displayValue) {
-    const min = jobData.hourlyBudgetMin?.displayValue || '?';
-    const max = jobData.hourlyBudgetMax?.displayValue || '?';
-    console.log(`💰 hourlyBudget: ${min}-${max}/hr`);
-  }
-  
-  // Duration
-  if (jobData.duration) {
-    const durationLabel = typeof jobData.duration === 'string' ? jobData.duration : (jobData.duration as any).label;
-    if (durationLabel) {
-      console.log(`⏰ duration: ${durationLabel}`);
+
+  const displayValue = (key: string, value: any, indent: number): void => {
+    const prefix = '  '.repeat(indent);
+    if (value === undefined || value === null) {
+      // console.log(`${prefix}${key}: N/A`); // Optionally display N/A for null/undefined
+      return;
     }
-  }
-  
-  // Application Stats
-  if (jobData.totalApplicants !== undefined) {
-    console.log(`👥 totalApplicants: ${jobData.totalApplicants}`);
-  }
-  if ((jobData as any).totalHired !== undefined) {
-    console.log(`✅ totalHired: ${(jobData as any).totalHired}`);
-  }
-  
-  // Client Information
-  if (jobData.client) {
-    console.log(`👤 client:`);
-    if (jobData.client.totalHires !== undefined) {
-      console.log(`  • totalHires: ${jobData.client.totalHires}`);
-    }
-    if (jobData.client.totalReviews !== undefined) {
-      console.log(`  • totalReviews: ${jobData.client.totalReviews}`);
-    }
-    if ((jobData.client as any).avgRating !== undefined) {
-      console.log(`  • avgRating: ${(jobData.client as any).avgRating}★`);
-    }
-    if (jobData.client.totalSpent?.displayValue) {
-      console.log(`  • totalSpent: $${jobData.client.totalSpent.displayValue}`);
-    }
-    if (jobData.client.location?.country || jobData.clientCompanyPublic?.country?.name) {
-      const country = jobData.client.location?.country || jobData.clientCompanyPublic?.country?.name;
-      const city = jobData.client.location?.city || jobData.clientCompanyPublic?.city;
-      const timezone = jobData.client.location?.timezone || jobData.clientCompanyPublic?.timezone;
-      
-      let locationDisplay = country;
-      if (city) {
-        locationDisplay = `${city}, ${country}`;
-      }
-      
-      // Add current local time if timezone is available
-      if (timezone) {
-        try {
-          const clientTime = new Date().toLocaleString('en-US', { 
-            timeZone: timezone,
-            weekday: 'short',
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true 
+
+    if (typeof value === 'object') {
+      if (Array.isArray(value)) {
+        if (value.length > 0) {
+          console.log(`${prefix}${key}: [`);
+          value.forEach((item, index) => {
+            console.log(`${prefix}  - [${index}]`);
+            displayObject(item, indent + 2, jobData);
           });
-          locationDisplay += ` (${clientTime} local)`;
-        } catch (error) {
-          // Fallback if timezone is invalid
-          locationDisplay += ` (${timezone})`;
+          console.log(`${prefix}]`);
+        } else {
+          // console.log(`${prefix}${key}: []`); // Optionally display empty arrays
+        }
+      } else {
+        // Handle specific complex objects with custom formatting
+        if (key === 'amount' || key === 'hourlyBudgetMin' || key === 'hourlyBudgetMax') {
+          const rawValue = value.rawValue;
+          const displayValue = value.displayValue;
+          const currency = value.currency;
+          if (rawValue || displayValue) {
+            console.log(`${prefix}💰 ${key}: ${displayValue || rawValue} ${currency || ''}`.trim());
+          }
+        } else if (key === 'client' && value) {
+          console.log(`${prefix}👤 client:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'classification' && value) {
+          console.log(`${prefix}📂 classification:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'contractTerms' && value) {
+          console.log(`${prefix}📝 contractTerms:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'contractorSelection' && value) {
+          console.log(`${prefix}🤝 contractorSelection:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'ownership' && value) {
+          console.log(`${prefix}👑 ownership:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'activityStat' && value) {
+          console.log(`${prefix}📊 activityStat:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'annotations' && value) {
+          console.log(`${prefix}🏷️ annotations:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'attachments' && value) {
+          console.log(`${prefix}📎 attachments:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'workFlowState' && value) {
+          console.log(`${prefix}🔄 workFlowState:`);
+          displayObject(value, indent + 1, jobData);
+        } else if (key === 'clientCompanyPublic' && value) {
+          console.log(`${prefix}🏢 clientCompanyPublic:`);
+          displayObject(value, indent + 1, jobData);
+        } else {
+          // Generic object display
+          if (Object.keys(value).length > 0) {
+            console.log(`${prefix}${key}: {`);
+            displayObject(value, indent + 1, jobData);
+            console.log(`${prefix}}`);
+          } else {
+            // console.log(`${prefix}${key}: {}`); // Optionally display empty objects
+          }
         }
       }
-      
-      console.log(`  • location: ${locationDisplay}`);
+    } else {
+      // Primitive value
+      console.log(`${prefix}${key}: ${value}`);
     }
-    if (jobData.client.verificationStatus) {
-      console.log(`  • verificationStatus: ${jobData.client.verificationStatus}`);
-    }
-  }
-  
-  // Skills
-  if (jobData.classification?.skills && jobData.classification.skills.length > 0) {
-    const skills = jobData.classification.skills
-      .map(skill => skill.preferredLabel)
-      .filter(Boolean)
-      .join(', ');
-    if (skills) console.log(`🛠️ skills: ${skills}`);
-  }
-  
-  // Category
-  if (jobData.classification?.category?.preferredLabel) {
-    console.log(`📂 category: ${jobData.classification.category.preferredLabel}`);
-  }
-  
-  // Preferred Locations
-  if (jobData.preferredFreelancerLocation && jobData.preferredFreelancerLocation.length > 0) {
-    const locations = jobData.preferredFreelancerLocation.join(', ');
-    console.log(`🌍 preferredFreelancerLocation: ${locations}`);
-  }
-  
-  // Posted date
-  if (jobData.publishedDateTime) {
-    console.log(`📅 publishedDateTime: ${jobData.publishedDateTime}`);
-  }
-  
-  // Screening Questions
-  if (jobData.contractorSelection?.proposalRequirement?.screeningQuestions && 
-      jobData.contractorSelection.proposalRequirement.screeningQuestions.length > 0) {
-    console.log(`\n❓ SCREENING QUESTIONS (${jobData.contractorSelection.proposalRequirement.screeningQuestions.length}):`);
-    jobData.contractorSelection.proposalRequirement.screeningQuestions.forEach((sq, index) => {
-      if (sq.question) {
-        console.log(`${index + 1}. ${sq.question}`);
+  };
+
+  const displayObject = (obj: any, indent: number = 0, parentJobData?: JobData): void => {
+    const prefix = '  '.repeat(indent);
+    
+    // Handle location consolidation for clientCompanyPublic at the beginning
+    if (obj.city || obj.state) {
+      const location = [obj.city, obj.state].filter(Boolean).join(', ');
+      if (location) {
+        console.log(`${prefix}📍 Location: ${location}`);
       }
-    });
-  }
-  
-  // Description
-  if (jobData.description) {
-    console.log(`\n📝 description:`);
-    console.log(jobData.description);
-  }
-  
+    }
+    
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = obj[key];
+
+        // Special handling for description to avoid excessive logging of long text
+        if (key === 'description' && typeof value === 'string') {
+          console.log(`${prefix}📝 description:`);
+          console.log(value);
+        } else if (key === 'title' && typeof value === 'string') {
+          console.log(`${prefix}📋 title: ${value}`);
+        } else if (key === 'id' && typeof value === 'string') {
+          console.log(`${prefix}🆔 id: ${value}`);
+        } else if (key === 'ciphertext' && typeof value === 'string') {
+          console.log(`${prefix}🔐 ciphertext: ${value}`);
+        } else if (key === 'publishedDateTime' && typeof value === 'string') {
+          console.log(`${prefix}📅 publishedDateTime: ${value}`);
+        } else if (key === 'preferredFreelancerLocation' && Array.isArray(value)) {
+          if (value.length > 0) {
+            console.log(`${prefix}🌍 preferredFreelancerLocation: ${value.join(', ')}`);
+          }
+        } else if (key === 'skills' && Array.isArray(value)) {
+          const skills = value.map(skill => skill.preferredLabel).filter(Boolean).join(', ');
+          if (skills) console.log(`${prefix}🛠️ skills: ${skills}`);
+        } else if (key === 'additionalSkills' && Array.isArray(value)) {
+          // Handle additionalSkills as array of strings (flattened format)
+          const additionalSkills = value.join(', ');
+          if (additionalSkills) console.log(`${prefix}➕ additionalSkills: ${additionalSkills}`);
+        } else if (key === 'hourlyContractTerms' && value) {
+          console.log(`${prefix}hourlyContractTerms:`);
+          // Handle hourly contract terms with budget consolidation
+          if (value.hourlyBudgetMin && value.hourlyBudgetMax) {
+            const budgetPrefix = '  '.repeat(indent + 1);
+            console.log(`${budgetPrefix}💰 Budget: $${value.hourlyBudgetMin} - $${value.hourlyBudgetMax}`);
+          }
+          // Display other fields except budget min/max
+          for (const subKey in value) {
+            if (subKey !== 'hourlyBudgetMin' && subKey !== 'hourlyBudgetMax' && value[subKey] !== undefined) {
+              if (subKey === 'engagementDuration' && value[subKey]?.id) {
+                // Remove id from engagementDuration
+                const cleanDuration = { ...value[subKey], id: undefined };
+                displayValue(subKey, cleanDuration, indent + 1);
+              } else {
+                displayValue(subKey, value[subKey], indent + 1);
+              }
+            }
+          }
+        } else if (key === 'company' && value?.id) {
+          // Remove id from company in ownership
+          const cleanCompany = { ...value, id: undefined };
+          displayValue('company', cleanCompany, indent);
+        } else if (key === 'team' && value?.id) {
+          // Remove id from team in ownership  
+          const cleanTeam = { ...value, id: undefined };
+          displayValue('team', cleanTeam, indent);
+        } else if (key === 'city' || key === 'state') {
+          // Skip individual city/state - will be handled by location consolidation
+          // Don't process this field, but continue with others
+        } else if (key === 'legacyType') {
+          // Skip legacyType as requested
+          // Don't process this field, but continue with others
+        } else if (key === 'id' && (obj.company || obj.team)) {
+          // Skip id in ownership contexts only  
+          // Don't process this field, but continue with others
+        } else if (key === 'category' && value?.preferredLabel) {
+          console.log(`${prefix}📂 category: ${value.preferredLabel}`);
+        } else if (key === 'attachments' && Array.isArray(value) && value.length > 0) {
+          console.log(`${prefix}📎 attachments (${value.length}):`);
+          value.forEach((attachment, index) => {
+            const attachmentPrefix = '  '.repeat(indent + 1);
+            console.log(`${attachmentPrefix}[${index}]`);
+            
+            // Generate download URL if we have attachment id and job id
+            if (attachment.id && parentJobData?.id) {
+              const downloadUrl = `https://www.upwork.com/att/download/openings/${parentJobData.id}/attachments/${attachment.id}/download`;
+              console.log(`${attachmentPrefix}  📥 downloadUrl: ${downloadUrl}`);
+            }
+            
+            // Display other attachment properties
+            for (const attKey in attachment) {
+              if (attKey !== 'id' && attachment[attKey] !== undefined) {
+                console.log(`${attachmentPrefix}  ${attKey}: ${attachment[attKey]}`);
+              }
+            }
+            
+            // Still show the id for reference
+            if (attachment.id) {
+              console.log(`${attachmentPrefix}  id: ${attachment.id}`);
+            }
+          });
+        } else if (key === 'screeningQuestions' && Array.isArray(value)) {
+          if (value.length > 0) {
+            console.log(`${prefix}❓ SCREENING QUESTIONS (${value.length}):`);
+            value.forEach((sq, index) => {
+              if (sq.question) {
+                console.log(`${prefix}  ${index + 1}. ${sq.question}`);
+              }
+            });
+          }
+        } else if (key === 'tags' && Array.isArray(value)) {
+          // Remove annotations.tags as requested
+          // Don't process this field, but continue with others
+        } else if (key === 'customFields' && Array.isArray(value)) {
+          if (value.length > 0) {
+            const formattedFields = value.map(field => `${field.key}: ${field.value}`).join(', ');
+            console.log(`${prefix}customFields: ${formattedFields}`);
+          }
+        } else {
+          displayValue(key, value, indent);
+        }
+      }
+    }
+  };
+
+  displayObject(jobData, 0, jobData);
   console.log('='.repeat(80));
 }
 
@@ -770,12 +862,26 @@ async function handleJobNavigation(
   _allJobs: JobData[]
 ): Promise<void> {
   while (true) {
+    // Determine if job is currently marked as not-interested
+    const isNotInterested = selectedJob.status === 'not-interested';
+    
+    // Build menu options based on job status
+    const menuOptions = [
+      { key: 'p', label: 'Generate proposal', value: 'proposal' }
+    ];
+    
+    // Add interest toggle option - show only the appropriate action
+    if (isNotInterested) {
+      menuOptions.push({ key: 'n', label: 'Interested', value: 'mark-interested' });
+    } else {
+      menuOptions.push({ key: 'n', label: 'Not interested', value: 'mark-not-interested' });
+    }
+    
+    menuOptions.push({ key: 'esc', label: 'Back to job list', value: 'back' });
+    
     const choice = await NavigableKeyboardMenu.choose(
       '🎮 Choose action for this job:',
-      [
-        { key: 'p', label: 'Generate proposal', value: 'proposal' },
-        { key: 'b', label: 'Back to job list', value: 'back' }
-      ]
+      menuOptions
     );
     
     switch (choice) {
@@ -784,7 +890,26 @@ async function handleJobNavigation(
         if (applied) return; // Exit after successful application
         continue;
         
+      case 'mark-interested':
+        // Mark as interested - remove from tracking
+        jobsManager.removeTrackedJob(selectedJob.id);
+        delete selectedJob.status;
+        console.log('✅ Job marked as interested');
+        continue;
+        
+      case 'mark-not-interested':
+        // Mark as not interested and return to job list
+        jobsManager.markAsNotInterested(selectedJob.id, selectedJob.title);
+        selectedJob.status = 'not-interested';
+        console.log('🚫 Job marked as not interested');
+        console.log('\n⬅️ Returning to job list...');
+        return; // Exit and return to job selection
+        
       case 'back':
+        console.log('\n⬅️ Returning to job list...');
+        return; // Exit and return to job selection
+        
+      case 'escape-key-pressed':
         console.log('\n⬅️ Returning to job list...');
         return; // Exit and return to job selection
     }
@@ -845,38 +970,72 @@ async function handleApplyToJob(
   ]);
   
   console.log(`📝 Using template: ${proposalGenerator.getTemplateDisplayName(selectedTemplate)}`);
+
+  // Check for available AI runners (run in parallel to reduce delay)
   
+
+  // Check for available AI runners (run in parallel to reduce delay)
+  const claudeRunner = new ClaudeRunner();
+  const geminiRunner = new GeminiRunner('gemini-2.5-flash'); // Instantiate GeminiRunner with hardcoded model
+  const results = await Promise.allSettled([
+    claudeRunner.isAvailable(),
+    geminiRunner.isAvailable()
+  ]);
   
-  try {
-    const result = await proposalGenerator.generateProposal(comprehensiveJobData || selectedJob, selectedTemplate);
-    
-    if (result.success) {
-      console.log('✅ Proposal generated successfully!');
-      console.log(`📁 Saved to: ${result.outputPath}`);
-      console.log(`📄 Template used: ${result.templateUsed}`);
-      
-      // Pause so user can see the file path before returning to job table
-      console.log('\nPress any key to continue...');
-      process.stdin.setRawMode(true);
-      process.stdin.resume();
-      await new Promise(resolve => {
-        process.stdin.once('data', () => {
-          process.stdin.setRawMode(false);
-          process.stdin.pause();
-          resolve(undefined);
-        });
-      });
-    } else {
-      console.log('❌ Failed to generate proposal:', result.error);
-      return false;
+  const isClaudeAvailable = results[0].status === 'fulfilled' && results[0].value;
+  const isGeminiAvailable = results[1].status === 'fulfilled' && results[1].value;
+
+  const aiChoices = [];
+  if (isClaudeAvailable) {
+    aiChoices.push({ name: "Claude", value: "claude" });
+  }
+  if (isGeminiAvailable) {
+    aiChoices.push({ name: "Gemini", value: "gemini" });
+  }
+  aiChoices.push({ name: "None (manual proposal)", value: "none" });
+
+  // Prompt for AI selection
+  const { selectedAI } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'selectedAI',
+      message: 'Which AI would you like to use to generate your proposal?',
+      choices: aiChoices,
+      default: isGeminiAvailable ? 'gemini' : (isClaudeAvailable ? 'claude' : 'none') // Default to Gemini if available
     }
+  ]);
+
+  try {
+    let success = false; // Keep success variable
+
+    let proposalResult;
+    let runnerToUse: AIGenerator | null = null; // Explicitly type the runner
+
+    if (selectedAI === 'claude') {
+      runnerToUse = claudeRunner;
+    } else if (selectedAI === 'gemini') {
+      runnerToUse = geminiRunner; // Use the already instantiated geminiRunner
+    }
+
+    proposalResult = await proposalGenerator.generateProposal(comprehensiveJobData || selectedJob, selectedTemplate, runnerToUse);
+
+    if (proposalResult.success) {
+      success = true;
+      console.log('✅ Proposal generated successfully!');
+      console.log(`📁 Saved to: ${proposalResult.outputPath}`);
+      console.log(`📄 Template used: ${proposalResult.templateUsed}`);
+    } else {
+      console.log('❌ Failed to generate proposal:', proposalResult.error);
+    }
+
+    // The file is now saved by ProposalGenerator, so this block is removed.
+    // Ensure the function returns true if successful, false otherwise.
+    return success;
   } catch (error) {
     console.log('❌ Error generating proposal:', error instanceof Error ? error.message : 'Unknown error');
     return false;
   }
 
-  // Proposal generation complete - use 'A' key in main table to mark as applied if needed
-  
   return true;
 }
 
@@ -1028,7 +1187,7 @@ async function handleApplyToJob(
       return;
     }
 
-    const searchResults = await upworkApi.searchJobs(appConfig.upwork.searchFilters);
+    const searchResults = await upworkApi.searchJobs(appConfig.upworkApi.searchFilters);
     if (searchResults) {
       console.log(`\n✅ Found ${searchResults.total} jobs. Displaying detailed information:\n`);
 

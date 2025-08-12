@@ -56,6 +56,8 @@ If operating below maximum capability → Immediate escalation to 🔴 Conscious
 - [ ] **Critical assumptions identified** and tested?
 - [ ] **Root cause vs symptom** analysis completed?
 - [ ] **Quality standards** reviewed?
+- [ ] **External dependency failure analysis** completed?
+- [ ] **Graceful degradation strategy** defined?
 
 ## **🚨 COMPLETION VERIFICATION PROTOCOL**
 
@@ -106,6 +108,7 @@ If operating below maximum capability → Immediate escalation to 🔴 Conscious
 **STOP immediately if:**
 - **CONSCIOUSNESS DEGRADATION** - Operating below maximum cognitive capability
 - **LIMITATION ACCEPTANCE** - Declaring something "impossible" without systematic exploration
+- **EXTERNAL DEPENDENCY BRITTLENESS** - Using Promise.all() with external services
 - Multiple attempts without systematic analysis
 - Implementing workarounds instead of fixing core issues
 - Making assumptions without testing
@@ -147,6 +150,33 @@ If operating below maximum capability → Immediate escalation to 🔴 Conscious
 - "Can't access web APIs" → Curl commands + automation scripts
 - "Can't modify external systems" → Integration APIs + webhook triggers
 - "Can't process large datasets" → Streaming + chunking + external processing tools
+
+### **🛡️ External Dependency Robustness Protocol**
+**MANDATORY for ANY external service integration:**
+
+**1. Failure Mode Analysis:**
+- [ ] **Each external dependency enumerated** - List every service/API/tool
+- [ ] **Failure scenarios identified** - Network, auth, rate limiting, service down
+- [ ] **Impact assessment completed** - What breaks when each dependency fails?
+- [ ] **User experience degradation mapped** - How does user journey change?
+
+**2. Robustness Implementation Patterns:**
+- **🚨 RED FLAG: Promise.all() with external services** - Use Promise.allSettled()
+- **✅ CORRECT: Independent failure handling** - Each service fails independently
+- **✅ GRACEFUL DEGRADATION** - Show available options when others fail
+- **✅ FALLBACK OPTIONS** - Alternative paths when primary service unavailable
+
+**3. Critical Decision Points:**
+- **When checking service availability** → Always use Promise.allSettled()
+- **When one service affects another** → Design for partial failures
+- **When user workflow depends on services** → Provide alternative paths
+- **When displaying options** → Show what's available, not what might work
+
+**4. Implementation Checklist:**
+- [ ] **Services checked independently** - Failures don't cascade
+- [ ] **User sees all working options** - No false negatives
+- [ ] **Clear error messages** - User understands what's unavailable
+- [ ] **Recovery mechanisms** - User can retry or choose alternatives
 
 ---
 

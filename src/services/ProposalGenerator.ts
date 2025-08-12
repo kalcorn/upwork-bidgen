@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import { JobData } from '../core/UpWorkAPI';
+import { AIGenerator } from '../types/AIGenerator';
 
 export interface ProposalGenerationResult {
   success: boolean;
@@ -76,7 +77,8 @@ export class ProposalGenerator {
    */
   async generateProposal(
     jobData: JobData,
-    templateName?: string
+    templateName: string, // Make templateName required as it will be passed from cli
+    aiRunner: AIGenerator | null // Allow null // Add aiRunner parameter
   ): Promise<ProposalGenerationResult> {
     try {
       // Ensure output directory exists
@@ -85,7 +87,7 @@ export class ProposalGenerator {
       }
 
       // Determine template to use
-      const selectedTemplate = templateName || this.selectTemplate(jobData);
+      const selectedTemplate = templateName; // templateName is now required
       const templatePath = path.join(this.templatesDirectory, selectedTemplate);
 
       if (!fs.existsSync(templatePath)) {
@@ -98,8 +100,22 @@ export class ProposalGenerator {
       // Load template content
       const templateContent = fs.readFileSync(templatePath, 'utf-8');
 
+      // Extract and generate screening answers
+      const screeningQuestions = this.extractScreeningQuestions(jobData);
+      let screeningAnswers: Array<{question: string, answer: string}> = [];
+
+      if (screeningQuestions.length > 0 && aiRunner) { // Add check for aiRunner
+        console.log(`Found ${screeningQuestions.length} screening questions - generating answers...`);
+        const answerResult = await aiRunner.generateScreeningAnswers(jobData, screeningQuestions);
+        if (answerResult.success && answerResult.answers) {
+          screeningAnswers = answerResult.answers;
+        } else {
+          console.warn(`Failed to generate screening answers: ${answerResult.error || 'Unknown error'}`);
+        }
+      }
+
       // Generate proposal content by replacing placeholders
-      const proposalContent = this.fillTemplate(templateContent, jobData);
+      const proposalContent = this.fillTemplate(templateContent, jobData, screeningAnswers);
 
       // Create output filename with timestamp and job ID
       const now = new Date();
@@ -302,9 +318,13 @@ export class ProposalGenerator {
   }
 
   /**
-   * Fill template with job data
+   * Fill template with job data and optionally append screening questions
    */
-  private fillTemplate(template: string, jobData: JobData): string {
+  private fillTemplate(
+    template: string, 
+    jobData: JobData, 
+    screeningAnswers?: Array<{question: string, answer: string}>
+  ): string {
     let filled = template;
 
     // Basic replacements
@@ -323,6 +343,15 @@ export class ProposalGenerator {
     filled = filled.replace(/\[Skills\]/g, skills);
     filled = filled.replace(/\[Client Location\]/g, clientLocation);
     filled = filled.replace(/\[Key Outcome or Problem — 3–7 words\]/g, this.extractKeyProblem(title, description));
+
+    // Append screening questions section if answers provided
+    if (screeningAnswers && screeningAnswers.length > 0) {
+      filled += '\n\n## Screening Questions\n\n';
+      screeningAnswers.forEach((qa, index) => {
+        filled += `**Q${index + 1}: ${qa.question}**\n`;
+        filled += `**A:** ${qa.answer}\n\n`;
+      });
+    }
 
     return filled;
   }
@@ -350,13 +379,14 @@ export class ProposalGenerator {
   private extractSkills(jobData: JobData): string {
     const skills: string[] = [];
 
-    // From classification
-    if (jobData.classification?.skills) {
-      jobData.classification.skills.forEach(skill => {
-        if (skill.preferredLabel) {
-          skills.push(skill.preferredLabel);
-        }
-      });
+    // From classification (skills are now string arrays)
+    if (jobData.classification?.skills && Array.isArray(jobData.classification.skills)) {
+      skills.push(...jobData.classification.skills);
+    }
+
+    // Include additional skills as well
+    if (jobData.classification?.additionalSkills && Array.isArray(jobData.classification.additionalSkills)) {
+      skills.push(...jobData.classification.additionalSkills);
     }
 
     return skills.length > 0 ? skills.slice(0, 5).join(', ') : 'the required technologies';
@@ -385,6 +415,32 @@ export class ProposalGenerator {
     }
 
     return 'deliver results';
+  }
+
+  /**
+   * Extract screening questions from job data
+   */
+  private extractScreeningQuestions(jobData: JobData): Array<{id?: string, question?: string, required?: boolean}> {
+    const questions = jobData.contractorSelection?.proposalRequirement?.screeningQuestions;
+    if (!questions || !Array.isArray(questions)) {
+      return [];
+    }
+
+    return questions
+      .filter(q => q.question && q.question.trim()) // Only include questions with actual text
+      .map(q => {
+        const extracted: {id?: string, question?: string, required?: boolean} = {};
+        if (q.id !== undefined) {
+          extracted.id = q.id;
+        }
+        if (q.question !== undefined) {
+          extracted.question = q.question;
+        }
+        if (q.required !== undefined) {
+          extracted.required = q.required;
+        }
+        return extracted;
+      });
   }
 
   /**

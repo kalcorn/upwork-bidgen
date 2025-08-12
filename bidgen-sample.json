@@ -1,0 +1,130 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2025-01-01T00:00:00.000Z",
+  "credentials": {
+    "apiKey": {
+      "iv": "",
+      "encrypted": ""
+    },
+    "apiSecret": {
+      "iv": "",
+      "encrypted": ""
+    },
+    "accessToken": {
+      "iv": "",
+      "encrypted": ""
+    },
+    "refreshToken": {
+      "iv": "",
+      "encrypted": ""
+    },
+    "encryptedAt": ""
+  },
+  "daemon": {
+    "running": false,
+    "port": 8947,
+    "startTime": 0,
+    "callbacks": 0,
+    "messages": 0,
+    "pid": 0
+  },
+  "jobs": {
+    "tracked": []
+  },
+  "upworkApi": {
+    "apiUrl": "https://www.upwork.com/api/v2",
+    "graphqlUrl": "https://www.upwork.com/graphql",
+    "requestTimeout": 30000,
+    "maxRetries": 3,
+    "retryDelay": 1000,
+    "useApi": true,
+    "oauthRedirectUri": "http://localhost:8947/oauth/callback",
+    "searchFilters": {
+      "sortAttributes": [
+        {
+          "field": "RECENCY"
+        }
+      ],
+      "searchType": "USER_JOBS_SEARCH",
+      "marketPlaceJobFilter": {
+        "hourlyRate_eq": {
+          "rangeStart": 75,
+          "rangeEnd": null
+        },
+        "budgetRange_eq": {
+          "rangeStart": 500,
+          "rangeEnd": null
+        },
+        "pagination_eq": {
+          "after": "0",
+          "first": 50
+        },
+        "categoryIds_any": [
+          "531770282580668420",
+          "531770282580668419",
+          "1737190722360750082",
+          "531770282589057025",
+          "531770282589057026",
+          "531770282589057027",
+          "531770282589057024",
+          "531770282589057032",
+          "531770282589057028",
+          "531770282584862733"
+        ],
+        "proposalRange_eq": {
+          "rangeStart": 0,
+          "rangeEnd": 20
+        }
+      }
+    }
+  },
+  "user": {
+    "name": "Your Name",
+    "title": "Your Professional Title",
+    "hourlyRate": {
+      "min": 50,
+      "target": 75,
+      "max": 100
+    },
+    "experienceLevel": "expert",
+    "preferredProjectSizes": [
+      "large",
+      "medium"
+    ],
+    "expertise": [
+      "Your Skill 1",
+      "Your Skill 2",
+      "Your Skill 3"
+    ],
+    "portfolio": "https://your-portfolio.com",
+    "availability": "Full-time",
+    "timezone": "Your Timezone (e.g., UTC-5)",
+    "languages": [
+      "English"
+    ]
+  },
+  "templates": {
+    "directory": "./templates",
+    "defaultTemplate": "corporate-general.txt",
+    "fallbackTemplate": "misc.txt"
+  },
+  "ai": {
+    "claude": {
+      "enabled": true,
+      "model": "claude-3-sonnet-20240229",
+      "maxTokens": 4000,
+      "temperature": 0.7
+    },
+    "gemini": {
+      "enabled": false,
+      "model": "gemini-pro",
+      "maxTokens": 4000,
+      "temperature": 0.7
+    }
+  },
+  "output": {
+    "directory": "./output",
+    "format": "txt",
+    "includeMetadata": true
+  }
+}

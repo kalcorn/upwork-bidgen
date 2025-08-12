@@ -89,7 +89,7 @@ export interface JobData {
     description?: string;
   };
   
-  // Classification
+  // Classification (simplified to use preferredLabel strings only)
   classification?: {
     category?: {
       id?: string;
@@ -99,35 +99,11 @@ export interface JobData {
         preferredLabel?: string;
       };
     };
-    subCategory?: {
-      id?: string;
-      preferredLabel?: string;
-      parentCategory?: {
-        id?: string;
-        preferredLabel?: string;
-      };
-    };
-    occupation?: {
-      id?: string;
-      preferredLabel?: string;
-    };
-    skills?: Array<{
-      id?: string;
-      preferredLabel?: string;
-      ontologySkill?: {
-        id?: string;
-        preferredLabel?: string;
-      };
-    }>;
-    additionalSkills?: Array<{
-      id?: string;
-      preferredLabel?: string;
-      ontologySkill?: {
-        id?: string;
-        preferredLabel?: string;
-      };
-    }>;
-  };
+    subCategory?: string | undefined; // Flattened to preferredLabel only
+    occupation?: string | undefined; // Flattened to preferredLabel only
+    skills?: string[] | undefined; // Flattened to array of preferredLabel strings
+    additionalSkills?: string[] | undefined; // Flattened to array of preferredLabel strings
+  } | undefined;
 
   // Contract Terms
   contractTerms?: {
@@ -663,7 +639,7 @@ export class UpWorkAPI {
             'Authorization': `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json'
           },
-          timeout: this.config.upwork.requestTimeout
+          timeout: this.config.upworkApi.requestTimeout
         }
       );
 
@@ -784,7 +760,27 @@ export class UpWorkAPI {
         // Comprehensive fields
         workFlowState: jobData.workFlowState,
         canClientReceiveContractProposal: jobData.canClientReceiveContractProposal,
-        classification: jobData.classification,
+        classification: jobData.classification ? {
+          category: jobData.classification.category,
+          subCategory: jobData.classification.subCategory?.preferredLabel,
+          occupation: jobData.classification.occupation?.preferredLabel,
+          skills: (() => {
+            if (!jobData.classification.skills) return [];
+            if (Array.isArray(jobData.classification.skills)) {
+              return jobData.classification.skills.map((skill: any) => skill.preferredLabel).filter(Boolean);
+            }
+            // If it's not an array, return empty array to avoid errors
+            return [];
+          })(),
+          additionalSkills: (() => {
+            if (!jobData.classification.additionalSkills) return [];
+            if (Array.isArray(jobData.classification.additionalSkills)) {
+              return jobData.classification.additionalSkills.map((skill: any) => skill.preferredLabel).filter(Boolean);
+            }
+            // If it's not an array, return empty array to avoid errors
+            return [];
+          })()
+        } : undefined,
         contractTerms: jobData.contractTerms,
         contractorSelection: jobData.contractorSelection,
         ownership: jobData.ownership,
@@ -962,7 +958,7 @@ export class UpWorkAPI {
           ...(filters.marketPlaceJobFilter?.proposalRange_eq && {
             proposalRange_eq: filters.marketPlaceJobFilter.proposalRange_eq
           }),
-          pagination_eq: filters.marketPlaceJobFilter?.pagination_eq || this.config.upwork.searchFilters.marketPlaceJobFilter.pagination_eq,
+          pagination_eq: filters.marketPlaceJobFilter?.pagination_eq || this.config.upworkApi.searchFilters.marketPlaceJobFilter.pagination_eq,
           ...(filters.marketPlaceJobFilter?.categoryIds_any && {
             categoryIds_any: filters.marketPlaceJobFilter.categoryIds_any
           })

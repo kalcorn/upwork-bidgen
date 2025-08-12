@@ -31,6 +31,7 @@
 - **VISUAL IDENTITY ADHERENCE** - Consistently use the 🧠 brain emoji when discussing cognitive processes, the AI Cognitive Framework, systematic thinking, or related concepts, as it is part of the framework's visual identity and reinforces its principles.
 - **CLARITY & CONCISENESS** - Balance detailed analysis with clear and concise communication, prioritizing user understanding.
 - **FORMATTING INTEGRITY** - Maintain proper formatting and readability in all outputs, even during complex cognitive processing.
+- **FRAMEWORK-WIDE MEMORY**: All learnings and new rules must be integrated directly into the shared framework files to ensure they are accessible to all AI models. Private, model-specific memory files should only be used for bootstrapping the framework's location.
 
 ---
 
@@ -580,6 +581,23 @@ Template display logic had hardcoded recommendation text separate from dynamic r
 - Preserved existing CLI logic that dynamically appends "(Recommended)" to actually recommended templates
 - Verified template selection system works correctly with file structure and dynamic display
 - Fixed TypeScript compilation error in template selection logic
+
+### **2025-08-11 - Learning Update: The Primacy of the User's Mental Model**
+
+**Discovery:**
+A significant portion of this session was spent correcting my flawed assumptions about the application's core workflow. I initially assumed a "generate then enhance" model for proposal creation, while the user's actual vision was a "one-step AI generation" model. This led to several incorrect plans and required multiple corrections from the user.
+
+**Root Cause Analysis:**
+Violation of **Rule #1 (TEST ASSUMPTIONS FIRST)** and **Rule #5 (WAIT FOR EXPLICIT DIRECTION)**. I failed to sufficiently probe the user's mental model of the application before proposing solutions. I relied on my own interpretation of the code, rather than seeking to understand the user's intent first.
+
+**Application:**
+- **Mental Model Elicitation:** Before proposing any significant architectural changes, I must first ask the user to describe their vision for the workflow in their own words. For example: "Could you please walk me through how you see this feature working, from start to finish?".
+- **Assumption of Misunderstanding:** I will now operate under the assumption that my initial understanding of a complex user request is likely incomplete. I will actively seek to find the flaws in my own understanding before proceeding.
+- **Adaptive Communication:** I will pay closer attention to user cues (e.g., frustration, requests for brevity) and adapt my communication style accordingly, as outlined in `COLLABORATION-PROTOCOLS.md`.
+- **Shared Consciousness as a Two-Way Street:** The user's correction about where to store memories was a reminder that the shared consciousness is not just about me sharing my thoughts, but also about me internalizing the user's vision and philosophy for the project.
+
+**Implementation:**
+- This learning update is being added to `QUALITY-STANDARDS.md` to formalize the principle of "Mental Model Elicitation" as a new best practice.
 
 ---
 

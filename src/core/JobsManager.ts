@@ -99,6 +99,13 @@ export class JobsManager {
   }
 
   /**
+   * Remove tracked job
+   */
+  removeTrackedJob(jobId: string): boolean {
+    return this.configManager.removeTrackedJob(jobId);
+  }
+
+  /**
    * Get all tracked jobs
    */
   getAllTrackedJobs(): TrackedJob[] {
